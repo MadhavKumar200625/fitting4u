@@ -1,26 +1,123 @@
 @import "tailwindcss";
 
+/* -------------------------
+   Theme Colors
+-------------------------- */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --color-primary: #003466;
+  --color-accent: #ffc1cc;
+  --color-base: #ffffff;
+  --color-foreground: #171717;
+  --shadow-soft: 0 4px 15px rgba(0, 0, 0, 0.1);
+  --shadow-strong: 0 8px 30px rgba(0, 0, 0, 0.2);
+  --font-sans: 'Poppins', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* -------------------------
+   Base Styles
+-------------------------- */
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  @apply bg-[var(--color-base)] text-white antialiased;
+  font-family: var(--font-sans);
 }
+
+/* -------------------------
+   Typography
+-------------------------- */
+h1, h2, h3, h4, h5, h6 {
+  @apply font-semibold tracking-tight; /* removed text-[var(--color-primary)] */
+}
+
+p {
+  @apply leading-relaxed;
+}
+
+
+/* -------------------------
+   Buttons & Links
+-------------------------- */
+.btn {
+  @apply inline-block px-6 py-3 rounded-full font-medium transition-all duration-300 ease-in-out;
+  background-color: var(--color-primary);
+  color: white;
+  box-shadow: var(--shadow-soft);
+}
+
+.btn:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-strong);
+  background-color: #002952; /* Slightly darker on hover */
+}
+
+.btn-accent {
+  @apply bg-[var(--color-accent)] text-[var(--color-primary)] shadow-lg;
+  transition: all 0.3s ease;
+}
+
+.btn-accent:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-strong);
+  background-color: #ffb0c2; /* Slightly darker accent */
+  color: var(--color-primary)
+}
+
+/* Links */
+a {
+  @apply transition-colors duration-300;
+}
+
+a:hover {
+  color: var(--color-accent);
+}
+
+/* -------------------------
+   Cards & Containers
+-------------------------- */
+.card {
+  @apply rounded-2xl p-6 bg-white shadow-md transition-transform duration-300;
+  background: rgba(255, 255, 255, 0.9); /* Slightly glassy look */
+  backdrop-filter: blur(8px);
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-strong);
+}
+
+/* -------------------------
+   Animations
+-------------------------- */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.fade-in-up { animation: fadeInUp 0.8s ease forwards; }
+.fade-in { animation: fadeIn 1s ease forwards; }
+.float { animation: float 3s ease-in-out infinite; }
+
+/* -------------------------
+   Scrollbar (premium touch)
+-------------------------- */
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-track { background: #f1f1f1; }
+::-webkit-scrollbar-thumb {
+  background: var(--color-primary);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover { background: #002952; }
