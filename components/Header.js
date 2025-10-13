@@ -6,86 +6,95 @@ import Link from "next/link";
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // replace later with auth logic
+  const [isLoggedIn, setIsLoggedIn] = useState(true);
+
+  const tabs = [
+    { name: "Home", link: "/", active: true },
+    { name: "About", link: "/about", active: true },
+    { name: "Boutiques", link: "/boutiques", active: true },
+    { name: "Fabric Store", link: "/fabric-store", active: true },
+    { name: "Home Measurement", link: "/home-measurement", active: true },
+  ];
 
   return (
-    <header className="w-full fixed top-0 z-50 backdrop-blur-md bg-[rgba(0,52,102,0.6)] text-white shadow-lg">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
-        {/* Logo */}
-        <Link href="/" className="text-2xl md:text-3xl font-semibold tracking-tight">
-          <span className="text-[var(--color-accent)]">Fitting</span>
-          <span className="text-white">4U</span>
+    <header className="w-full fixed top-0 z-50 bg-white/90 backdrop-blur-xl shadow-md border-b border-gray-100 transition-all duration-300">
+      <div className="flex flex-wrap items-center justify-between px-4 sm:px-10 lg:px-16 py-4 sm:py-5 gap-y-3">
+        {/* LEFT: LOGO */}
+        <Link
+          href="/"
+          className="text-3xl md:text-4xl font-bold tracking-tight flex-shrink-0"
+        >
+          <span className="text-[var(--color-primary)]">Fitting</span>
+          <span className="text-[var(--color-accent)]">4U</span>
         </Link>
 
-        {/* Desktop Navigation */}
-        <nav className="hidden md:flex space-x-8 text-base md:text-lg font-medium">
-          {["Boutiques", "Fabric Store", "Home Measurement"].map((item) => (
-            <Link
-              key={item}
-              href={`/${item.toLowerCase().replace(/\s+/g, "-")}`}
-              className="relative group text-white"
-            >
-              <span className="transition-colors duration-300 text-white group-hover:text-[var(--color-accent)]">
-                {item}
-              </span>
-              <span className="absolute bottom-[-2px] left-0 w-0 h-[2px] bg-[var(--color-accent)] transition-all duration-300 group-hover:w-full"></span>
-            </Link>
-          ))}
-        </nav>
-
-        {/* Search Bar */}
-        <div className="hidden md:flex items-center relative">
-          <Search className="absolute left-3 text-gray-300" size={18} />
-          <input
-            type="text"
-            placeholder="Search products or fabrics..."
-            className="pl-10 pr-4 py-2 rounded-full text-white text-sm md:text-base bg-white/20 placeholder-gray-300 focus:bg-white/30 outline-none transition-all duration-300 w-36 md:w-48 lg:w-64 focus:w-64"
-          />
+        {/* CENTER: SEARCH BAR */}
+        <div className="order-3 w-full sm:order-none sm:w-auto sm:flex-grow flex justify-center sm:justify-center">
+          <div className="relative w-full max-w-2xl sm:max-w-3xl md:max-w-4xl">
+            <Search
+              className="absolute left-6 top-1/2 transform -translate-y-1/2 text-gray-400"
+              size={24}
+            />
+            <input
+              type="text"
+              placeholder="Search for boutiques, fabrics, or measurements..."
+              className="w-full pl-14 pr-6 py-4 rounded-full text-md text-gray-800 placeholder-gray-400 bg-gradient-to-r from-white/90 to-white/70 border border-gray-200 shadow-[0_0_20px_rgba(0,0,0,0.05)] focus:shadow-[0_0_30px_rgba(255,193,204,0.4)] focus:ring-3 ring-[var(--color-primary)] ring-2 focus:ring-[var(--color-accent)] outline-none transition-all duration-300"
+            />
+            {/* Accent Glow Line */}
+            <div className="absolute inset-x-0 bottom-0 h-[2px] bg-gradient-to-r from-[var(--color-accent)]/70 to-[var(--color-primary)]/70 opacity-0 group-hover:opacity-100 transition-all duration-500 rounded-full"></div>
+          </div>
         </div>
 
-        {/* Right Icons */}
-        <div className="flex items-center space-x-4">
-          {!isLoggedIn ? (
-            <button className="btn-accent text-sm md:text-base px-4 py-2 rounded-full hover:shadow-md transition-all duration-300">
+        {/* RIGHT: ICONS */}
+        <div className="flex items-center space-x-6 text-[var(--color-primary)]">
+          {isLoggedIn ? (
+            <>
+              <Heart
+                size={24}
+                className="cursor-pointer hover:text-[var(--color-accent)] transition-colors"
+              />
+              <ShoppingCart
+                size={24}
+                className="cursor-pointer hover:text-[var(--color-accent)] transition-colors"
+              />
+              <User
+                size={24}
+                className="cursor-pointer hover:text-[var(--color-accent)] transition-colors"
+              />
+            </>
+          ) : (
+            <button className="px-5 py-2 bg-[var(--color-primary)] text-white rounded-full font-medium hover:bg-[#002a54] transition-all">
               Login
             </button>
-          ) : (
-            <>
-              <Heart className="cursor-pointer text-white hover:text-[var(--color-accent)] transition-colors duration-300" />
-              <ShoppingCart className="cursor-pointer text-white hover:text-[var(--color-accent)] transition-colors duration-300" />
-              <User className="cursor-pointer text-white hover:text-[var(--color-accent)] transition-colors duration-300" />
-            </>
           )}
 
-          {/* Mobile Menu Toggle */}
+          {/* MENU ICON */}
           <button
-            className="md:hidden text-white"
+            className="text-[var(--color-primary)] sm:hidden"
             onClick={() => setMenuOpen(!menuOpen)}
           >
-            {menuOpen ? <X size={22} /> : <Menu size={22} />}
+            {menuOpen ? <X size={28} /> : <Menu size={28} />}
           </button>
         </div>
       </div>
 
-      {/* Mobile Menu */}
+      {/* MOBILE MENU */}
       {menuOpen && (
-        <div className="md:hidden bg-[rgba(0,52,102,0.95)] backdrop-blur-md text-center py-4 space-y-3 transition-all fade-in-up">
-          {["Boutiques", "Fabric Store", "Home Measurement"].map((item) => (
-            <Link
-              key={item}
-              href={`/${item.toLowerCase().replace(/\s+/g, "-")}`}
-              className="block text-lg text-white hover:text-[var(--color-accent)] transition-colors duration-300"
-              onClick={() => setMenuOpen(false)}
-            >
-              {item}
-            </Link>
-          ))}
-          <div className="px-6">
-            <input
-              type="text"
-              placeholder="Search..."
-              className="w-full mt-3 py-2 px-4 rounded-full bg-white/20 text-white placeholder-gray-300 focus:bg-white/30 outline-none transition-all"
-            />
+        <div className="bg-white border-t border-gray-200 py-5 px-6 space-y-4 text-center shadow-inner animate-fade-in-up">
+          <div className="flex flex-col items-center space-y-3 text-[var(--color-primary)] text-lg font-medium">
+            {tabs.map(
+              (tab) =>
+                tab.active && (
+                  <Link
+                    key={tab.name}
+                    href={tab.link}
+                    onClick={() => setMenuOpen(false)}
+                    className="hover:text-[var(--color-accent)] transition-colors"
+                  >
+                    {tab.name}
+                  </Link>
+                )
+            )}
           </div>
         </div>
       )}
