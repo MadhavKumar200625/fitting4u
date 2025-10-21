@@ -17,9 +17,9 @@ const boutique = {
   logo: "https://upload.wikimedia.org/wikipedia/commons/a/ab/Logo_TV_2015.png",
   verified: true,
   location: {
-    name: "Milan, Italy",
-    lat: 45.4642,
-    lng: 9.19,
+    name: "1362/13 madina market chitli qabar jama masjid pin 110006",
+    lat: 28.6508,
+    lng: 77.2307,
   },
   images: [
     "https://i.pinimg.com/736x/4b/3d/ce/4b3dce75b28f4fd0a45e3b7394339eec.jpg",
@@ -61,10 +61,8 @@ const boutique = {
 
 export default function BoutiquePage() {
   return (
-    <section className="pt-36 pb-24 bg-white text-gray-800 relative overflow-hidden">
+    <section className="pt-40 md:pt-36 pb-24 bg-white text-gray-800 relative overflow-hidden">
       {/* Soft Background Glows */}
-      <div className="absolute top-0 right-[-100px] w-[400px] h-[400px] bg-[var(--color-accent)]/20 blur-3xl rounded-full" />
-      <div className="absolute bottom-0 left-[-120px] w-[300px] h-[300px] bg-[var(--color-accent)]/15 blur-3xl rounded-full" />
 
       <div className="max-w-7xl mx-auto px-6 md:px-10 relative z-10">
         {/* Header Section */}
