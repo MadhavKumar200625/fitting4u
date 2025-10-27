@@ -33,7 +33,7 @@ export default function AdminHome() {
   ];
 
   return (
-    <section className="min-h-screen bg-gradient-to-b from-[#ffffff] to-[#f9f9f9] py-24 px-6 md:px-10">
+    <section className="min-h-screen bg-gradient-to-b from-[#ffffff] to-[#f9f9f9] pb-24 pt-32 px-6 md:px-10">
       <div className="max-w-7xl mx-auto">
         {/* Heading */}
         <motion.div
