@@ -29,6 +29,7 @@ export default function BoutiquesManagement() {
     if (!confirm("Delete this boutique?")) return;
     await fetch(`/api/boutiques/${id}`, {
       method: "DELETE",
+      Authorization: `Bearer ${process.env.NEXT_PUBLIC_ADMIN_SECRET}`
     });
     setBoutiques(boutiques.filter((b) => b._id !== id));
   };
