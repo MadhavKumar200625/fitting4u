@@ -14,6 +14,7 @@ export async function GET(req, { params }) {
     if (!boutique) {
       return NextResponse.json({ error: "Boutique not found" }, { status: 404 });
     }
+    
 
     return NextResponse.json(boutique, { status: 200 });
   } catch (error) {
