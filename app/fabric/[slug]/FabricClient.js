@@ -41,11 +41,14 @@ export default function FabricClient({ fabric }) {
             <div className="space-y-16">
               <FabricImageSlider images={fabric.images} name={fabric.name} />
 
-              <Section title="Description">
+              <div className="hidden sm:block">
+                <Section title="Description">
                 <p className="text-neutral-800 leading-relaxed text-lg whitespace-pre-line">
                   {fabric.description}
                 </p>
               </Section>
+              </div>
+              
             </div>
 
             {/* === RIGHT COLUMN === */}
@@ -113,6 +116,14 @@ export default function FabricClient({ fabric }) {
                 <p><strong>Material:</strong> {fabric.material}</p>
                 <p><strong>Weave:</strong> {fabric.weave}</p>
                 <p><strong>Color:</strong> {fabric.color}</p>
+              </div>
+
+              <div className="block sm:hidden">
+                <Section title="Description">
+                <p className="text-neutral-800 leading-relaxed text-lg whitespace-pre-line">
+                  {fabric.description}
+                </p>
+              </Section>
               </div>
 
               {/* Dropdown Info Sections (Care comes first) */}
