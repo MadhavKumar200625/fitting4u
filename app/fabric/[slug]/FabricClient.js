@@ -75,9 +75,9 @@ export default function FabricClient({ fabric }) {
   {/* Price Row */}
   <div className="flex items-end  flex-wrap gap-2">
     <div>
-      <p className="text-4xl font-bold text-[#003466] leading-tight">
-        ₹{fabric.customerPrice}{" / meter"}
-        <span className=" text-2xl ml-2 whitespace-nowrap mb-1">
+      <p className="text-3xl sm:text-4xl font-bold text-[#003466] leading-tight">
+        ₹{fabric.customerPrice}{" / meter "}
+        <span className="text-xl sm:text-2xl  whitespace-nowrap mb-1">
       (Inclusive of all taxes)
     </span>
       </p>
