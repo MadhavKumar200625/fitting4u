@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Minus,
   Plus,
@@ -8,6 +8,7 @@ import {
   Star as StarIcon,
   StarHalf,
   StarOff,
+  ChevronDown,
 } from "lucide-react";
 import React, { useState, Suspense } from "react";
 import "keen-slider/keen-slider.min.css";
@@ -18,7 +19,7 @@ function FabricSkeleton() {
   return (
     <div className="animate-pulse max-w-7xl mx-auto pt-24 px-4 sm:px-6 md:px-10">
       <div className="grid md:grid-cols-2 gap-10 md:gap-16">
-        <div className="h-[300px] sm:h-[400px] md:h-[500px] bg-neutral-200 rounded-3xl" />
+        <div className="h-[400px] sm:h-[500px] bg-neutral-200 rounded-3xl" />
         <div className="space-y-5">
           <div className="h-8 w-3/4 bg-neutral-200 rounded-lg" />
           <div className="h-4 w-1/3 bg-neutral-200 rounded-lg" />
@@ -32,208 +33,224 @@ function FabricSkeleton() {
 export default function FabricClient({ fabric }) {
   return (
     <Suspense fallback={<FabricSkeleton />}>
-      <section className="min-h-screen bg-white text-black pt-36 sm:pt-32 pb-20 px-4 sm:px-6 md:px-10 font-[Poppins]">
+      <section className="min-h-screen bg-gradient-to-b from-white via-[#f9fafc] to-[#eef2f6] text-black pt-36 sm:pt-32 pb-32 px-4 sm:px-6 md:px-10 font-[Poppins]">
         <div className="max-w-7xl mx-auto">
           {/* === HEADER === */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 items-start mb-16">
-            {/* Gallery */}
-            <FabricImageSlider images={fabric.images} name={fabric.name} />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 mb-24 items-start">
+            {/* === LEFT COLUMN === */}
+            <div className="space-y-16">
+              <FabricImageSlider images={fabric.images} name={fabric.name} />
 
-            {/* Details */}
+              <Section title="Description">
+                <p className="text-neutral-800 leading-relaxed text-lg whitespace-pre-line">
+                  {fabric.description}
+                </p>
+              </Section>
+            </div>
+
+            {/* === RIGHT COLUMN === */}
             <div className="w-full">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3 leading-tight">
-                {fabric.name}
-              </h1>
-              <p className="text-base sm:text-lg font-medium text-neutral-700 mb-6 sm:mb-8">
-                {fabric.collectionName}
-              </p>
-
-              <ReviewStars avgStars={fabric.avgStars} reviews={fabric.reviews} />
-
-              {/* Prices */}
-              <div className="mb-8 sm:mb-10">
-                <p className="text-2xl sm:text-3xl font-semibold text-black">
-                  ₹{fabric.customerPrice}{" "}
-                  <span className="text-neutral-400 text-sm sm:text-base line-through ml-2 sm:ml-3">
-                    ₹{fabric.price}
-                  </span>
-                </p>
-                <p className="text-sm sm:text-base text-neutral-700 mt-1">
-                  Boutique price: ₹{fabric.boutiquePrice} / meter
-                </p>
-                <p
-                  className={`font-medium mt-2 ${
-                    fabric.stockLeft > 0 ? "text-green-600" : "text-red-500"
-                  }`}
-                >
-                  {fabric.stockLeft > 0
-                    ? `${fabric.stockLeft} meters available`
-                    : "Out of Stock"}
+              {/* Title */}
+              <div className="mb-10 border-l-4 border-[#003466] pl-4">
+                <h1 className="text-4xl sm:text-5xl font-bold leading-tight text-[#003466]">
+                  {fabric.name}
+                </h1>
+                <p className="text-lg text-neutral-600 font-medium mt-2">
+                  {fabric.collectionName}
                 </p>
               </div>
 
+              {/* Ratings */}
+              <ReviewStars avgStars={fabric.avgStars} reviews={fabric.reviews} />
+
+              <div className="mb-10 bg-white shadow-lg rounded-2xl p-6 border border-neutral-100 relative overflow-hidden">
+  {/* Discount Badge */}
+  <div className="absolute top-0 right-0 bg-[#003466] text-white text-xs font-medium px-3 py-1 rounded-bl-xl">
+    {Math.round(((fabric.price - fabric.customerPrice) / fabric.price) * 100)}% OFF
+  </div>
+
+  {/* Price Row */}
+  <div className="flex items-end  flex-wrap gap-2">
+    <div>
+      <p className="text-4xl font-bold text-[#003466] leading-tight">
+        ₹{fabric.customerPrice}{" / meter"}
+        <span className=" text-2xl ml-2 whitespace-nowrap mb-1">
+      (Inclusive of all taxes)
+    </span>
+      </p>
+      <span className="text-neutral-400 text-xl line-through ml-2 font-normal">
+          ₹{fabric.price} / meter
+        </span>
+      <p className="text-base text-neutral-700 mt-2">
+        Boutique Price: ₹{fabric.boutiquePrice} / meter
+      </p>
+      <p className="text-black text-base mt-1 font-medium">
+        You save ₹{(fabric.price - fabric.customerPrice).toFixed(2)}
+      </p>
+    </div>
+
+    {/* Taxes Note */}
+    
+  </div>
+
+  {/* Stock Status */}
+  <p
+    className={`font-medium mt-4 ${
+      fabric.stockLeft > 0 ? "text-green-600" : "text-red-500"
+    }`}
+  >
+    {fabric.stockLeft > 0
+      ? `${fabric.stockLeft} meters available`
+      : "Out of Stock"}
+  </p>
+</div>
+
               <QtyCartSection fabric={fabric} />
 
-              {/* Meta */}
-              <div className="mt-10 border-t border-neutral-200 pt-6 text-sm sm:text-base space-y-1">
-                <p>
-                  <strong>Width:</strong> {fabric.width} inches
-                </p>
-                <p>
-                  <strong>Material:</strong> {fabric.material}
-                </p>
-                <p>
-                  <strong>Weave:</strong> {fabric.weave}
-                </p>
-                <p>
-                  <strong>Color:</strong> {fabric.color}
-                </p>
+              {/* Specifications */}
+              <div className="mt-12 bg-white border border-neutral-100 rounded-3xl shadow-sm p-6 space-y-2">
+                <p><strong>Width:</strong> {fabric.width} inches</p>
+                <p><strong>Material:</strong> {fabric.material}</p>
+                <p><strong>Weave:</strong> {fabric.weave}</p>
+                <p><strong>Color:</strong> {fabric.color}</p>
+              </div>
+
+              {/* Dropdown Info Sections (Care comes first) */}
+              <div className="mt-6 divide-y divide-neutral-200 bg-white/70 backdrop-blur-sm rounded-2xl border border-neutral-100 overflow-hidden">
+
+                {/* Care Instructions FIRST */}
+                {fabric.careInstructions?.length > 0 && (
+                  <DropdownSection title="Care Instructions">
+                    <ul className="list-disc list-inside space-y-2 text-neutral-700">
+                      {fabric.careInstructions.map((c, i) => (
+                        <li key={i}>{c}</li>
+                      ))}
+                    </ul>
+                  </DropdownSection>
+                )}
+
+                <DropdownSection title="Shipping Information">
+                  <p>Orders are processed within 24–48 hours. Delivery typically takes 5–7 business days.</p>
+                  <ul className="list-disc list-inside mt-2 space-y-1">
+                    <li>Free shipping on orders above ₹999.</li>
+                    <li>International shipping available on request.</li>
+                    <li>Fabric is shipped rolled or folded to prevent creases.</li>
+                  </ul>
+                </DropdownSection>
+
+                <DropdownSection title="Returns & Exchange Policy">
+                  <p>Returns are accepted within 7 days of delivery if the fabric is uncut and unused.</p>
+                  <ul className="list-disc list-inside mt-2 space-y-1">
+                    <li>Fabric once cut cannot be returned or exchanged.</li>
+                    <li>For damaged or defective items, contact support within 48 hours.</li>
+                    <li>Refunds will be processed within 5–7 working days.</li>
+                  </ul>
+                </DropdownSection>
+
+                <DropdownSection title="Ask a Question">
+                  <p>Have queries about customization, availability, or wholesale? Reach out to us:</p>
+                  <div className="mt-3 space-y-1 text-[#003466] font-medium">
+                    <p>Email: support@maisontextiles.com</p>
+                    <p>Phone: +91 98211 22345</p>
+                  </div>
+                </DropdownSection>
+
+                <DropdownSection title="Additional Information">
+                  <ul className="space-y-2">
+                    <li><strong>Category:</strong> Dress Material</li>
+                    <li><strong>Origin:</strong> Handwoven in India</li>
+                    <li><strong>Fabric Code:</strong> FBR-2025-IVS</li>
+                    <li><strong>Weight:</strong> 120 GSM</li>
+                  </ul>
+                </DropdownSection>
               </div>
             </div>
           </div>
 
-          {/* === DETAILS === */}
-          <div className="space-y-14 sm:space-y-20">
-            <Section title="Description">{fabric.description}</Section>
-
-            {fabric.careInstructions?.length > 0 && (
-              <Section title="Care Instructions">
-                <ul className="list-disc list-inside space-y-1 sm:space-y-2">
-                  {fabric.careInstructions.map((c, i) => (
-                    <li key={i}>{c}</li>
-                  ))}
-                </ul>
-              </Section>
-            )}
-
-            {fabric.faqs?.length > 0 && (
-              <Section title="FAQs">
-                <div className="space-y-4 sm:space-y-5">
-                  {fabric.faqs.map((f, i) => (
-                    <div
-                      key={i}
-                      className="border border-neutral-200 rounded-2xl p-4 sm:p-6 shadow-sm hover:shadow-md transition"
-                    >
-                      <h4 className="font-semibold text-base sm:text-lg mb-2">
-                        {f.question}
-                      </h4>
-                      <p className="text-neutral-800 text-sm sm:text-base">
-                        {f.answer}
-                      </p>
+          {/* === REVIEWS === */}
+          {fabric.reviews?.length > 0 && (
+            <Section title="Reviews & Testimonials">
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-10">
+                {fabric.reviews.map((t, i) => (
+                  <motion.div
+                    key={i}
+                    whileHover={{ y: -5 }}
+                    transition={{ duration: 0.3 }}
+                    className="border border-neutral-100 bg-white rounded-3xl p-6 sm:p-8 shadow-md hover:shadow-xl transition"
+                  >
+                    <p className="italic text-neutral-900 leading-relaxed mb-3">
+                      “{t.review}”
+                    </p>
+                    <p className="font-semibold text-[#003466]">{t.name}</p>
+                    <div className="flex gap-1 mt-2">
+                      {Array.from({ length: t.stars }).map((_, j) => (
+                        <StarIcon key={j} size={16} className="text-[#FFD700] fill-[#FFD700]" />
+                      ))}
                     </div>
-                  ))}
-                </div>
-              </Section>
-            )}
-
-            {fabric.reviews?.length > 0 && (
-              <Section title="Reviews & Testimonials">
-                <div className="grid sm:grid-cols-2 gap-6 sm:gap-10">
-                  {fabric.reviews.map((t, i) => (
-                    <div
-                      key={i}
-                      className="border border-neutral-200 rounded-3xl p-5 sm:p-6 bg-white shadow-[0_5px_15px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_25px_rgba(0,0,0,0.08)] transition"
-                    >
-                      <p className="italic mb-3 text-neutral-900 leading-relaxed text-sm sm:text-base">
-                        “{t.review}”
-                      </p>
-                      <p className="font-semibold text-black">{t.name}</p>
-                      <div className="flex gap-1 mt-2">
-                        {Array.from({ length: t.stars }).map((_, j) => (
-                          <StarIcon
-                            key={j}
-                            size={15}
-                            className="text-[#FFD700] fill-[#FFD700]"
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </Section>
-            )}
-          </div>
+                  </motion.div>
+                ))}
+              </div>
+            </Section>
+          )}
         </div>
       </section>
     </Suspense>
   );
 }
 
-// ✅ Responsive Image Slider
+/* ---------- Image Slider ---------- */
 function FabricImageSlider({ images, name }) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [sliderRef, instanceRef] = useKeenSlider({
     loop: true,
-    mode: "snap",
     slides: { perView: 1 },
     duration: 1200,
-    renderMode: "performance",
     slideChanged(slider) {
       setCurrentSlide(slider.track.details.rel);
     },
   });
 
   React.useEffect(() => {
-    const interval = setInterval(() => instanceRef.current?.next(), 5000);
+    const interval = setInterval(() => instanceRef.current?.next(), 4000);
     return () => clearInterval(interval);
   }, [instanceRef]);
 
   return (
     <div className="relative w-full group">
-      <div ref={sliderRef} className="keen-slider rounded-xl sm:rounded-3xl overflow-hidden">
+      <div ref={sliderRef} className="keen-slider rounded-3xl overflow-hidden shadow-2xl">
         {images?.map((img, i) => (
           <div key={i} className="keen-slider__slide">
             <motion.div
-              className="relative w-full h-[280px] sm:h-[400px] md:h-[550px] bg-neutral-100 flex items-center justify-center"
-              initial={{ opacity: 0.8 }}
+              className="relative w-full h-[350px] sm:h-[500px] md:h-[650px] bg-[#f1f3f5] flex items-center justify-center"
+              initial={{ opacity: 0.9 }}
               whileHover={{ scale: 1.02 }}
               transition={{ duration: 0.5 }}
             >
-              <img
-                src={img}
-                alt={`${name}-${i}`}
-                className="w-full h-full object-contain"
-              />
+              <img src={img} alt={`${name}-${i}`} className="w-full h-full object-contain" />
             </motion.div>
           </div>
         ))}
       </div>
 
-      {/* Controls */}
-      <button
-        onClick={() => instanceRef.current?.prev()}
-        className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 bg-white/80 backdrop-blur-sm hover:bg-white text-black p-2 sm:p-3 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition"
-      >
-        ‹
-      </button>
-      <button
-        onClick={() => instanceRef.current?.next()}
-        className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 bg-white/80 backdrop-blur-sm hover:bg-white text-black p-2 sm:p-3 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition"
-      >
-        ›
-      </button>
-
       {/* Dots */}
-      {images?.length > 1 && (
-        <div className="absolute -bottom-6 sm:-bottom-8 left-1/2 -translate-x-1/2 flex gap-2 sm:gap-3">
-          {images.map((_, idx) => (
-            <button
-              key={idx}
-              onClick={() => instanceRef.current?.moveToIdx(idx)}
-              className={`w-2 sm:w-3 h-2 sm:h-3 rounded-full transition-all ${
-                currentSlide === idx
-                  ? "bg-black scale-125"
-                  : "bg-neutral-400/60 hover:bg-neutral-500"
-              }`}
-            />
-          ))}
-        </div>
-      )}
+      <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 flex gap-2">
+        {images?.map((_, idx) => (
+          <button
+            key={idx}
+            onClick={() => instanceRef.current?.moveToIdx(idx)}
+            className={`w-3 h-3 rounded-full transition-all ${
+              currentSlide === idx
+                ? "bg-[#003466] scale-125"
+                : "bg-neutral-300 hover:bg-neutral-500"
+            }`}
+          />
+        ))}
+      </div>
     </div>
   );
 }
 
-// ✅ Stars with Half Ratings
+/* ---------- Stars ---------- */
 function ReviewStars({ avgStars = 0, reviews = [] }) {
   const stars = Array.from({ length: 5 }).map((_, i) => {
     const diff = avgStars - i;
@@ -245,16 +262,16 @@ function ReviewStars({ avgStars = 0, reviews = [] }) {
   });
 
   return (
-    <div className="flex items-center gap-2 mb-6">
+    <div className="flex items-center gap-2 mb-8">
       <div className="flex gap-1">{stars}</div>
-      <span className="text-neutral-600 text-xs sm:text-sm">
+      <span className="text-neutral-600 text-sm">
         ({reviews?.length || 0} reviews)
       </span>
     </div>
   );
 }
 
-// ✅ Qty & Add to Cart
+/* ---------- Qty & Add to Cart ---------- */
 function QtyCartSection({ fabric }) {
   const [qty, setQty] = useState(1);
   const handleQtyChange = (delta) =>
@@ -262,37 +279,35 @@ function QtyCartSection({ fabric }) {
   const total = (fabric.customerPrice * qty).toFixed(2);
 
   return (
-    <div className="mb-8 sm:mb-10">
-      <div className="flex items-center gap-3 sm:gap-4 mb-5">
+    <div className="mb-10">
+      <div className="flex items-center gap-4 mb-5">
         <button
           onClick={() => handleQtyChange(-0.25)}
-          className="p-2 sm:p-3 bg-neutral-100 rounded-full hover:bg-neutral-200 transition"
+          className="p-3 bg-neutral-100 rounded-full hover:bg-neutral-200 transition"
         >
           <Minus size={16} />
         </button>
-        <span className="text-base sm:text-lg font-semibold w-16 text-center">
-          {qty}m
-        </span>
+        <span className="text-lg font-semibold w-16 text-center">{qty}m</span>
         <button
           onClick={() => handleQtyChange(0.25)}
-          className="p-2 sm:p-3 bg-neutral-100 rounded-full hover:bg-neutral-200 transition"
+          className="p-3 bg-neutral-100 rounded-full hover:bg-neutral-200 transition"
         >
           <Plus size={16} />
         </button>
       </div>
 
-      <p className="text-black mb-3 text-sm sm:text-base">
+      <p className="text-black mb-3">
         <span className="font-semibold">Total:</span> ₹{total}
       </p>
 
-      <button className="flex items-center justify-center gap-2 sm:gap-3 bg-black text-white px-8 sm:px-10 py-2.5 sm:py-3 rounded-full shadow-md hover:shadow-lg hover:bg-neutral-900 transition-all text-xs sm:text-sm uppercase tracking-wide font-medium w-full sm:w-auto">
-        <ShoppingBag size={16} /> Add to Cart
+      <button className="flex items-center justify-center gap-3 bg-[#003466] text-white px-10 py-3 rounded-full shadow-md hover:shadow-lg hover:bg-[#002850] transition-all text-sm uppercase tracking-wide font-medium w-full sm:w-auto">
+        <ShoppingBag size={18} /> Add to Cart
       </button>
     </div>
   );
 }
 
-// ✅ Section Wrapper
+/* ---------- Section Wrapper ---------- */
 function Section({ title, children }) {
   return (
     <motion.div
@@ -300,12 +315,55 @@ function Section({ title, children }) {
       whileInView={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
     >
-      <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 text-black">
-        {title}
-      </h2>
-      <div className="leading-relaxed text-neutral-900 text-sm sm:text-base">
+      <div className="text-center mb-10 mt-20">
+        <h2 className="text-3xl font-bold text-[#003466] mb-3 tracking-tight">
+          {title}
+        </h2>
+        <div className="w-16 h-[3px] bg-[#003466] mx-auto rounded-full"></div>
+      </div>
+      <div className="leading-relaxed text-neutral-900 text-base sm:text-lg max-w-5xl mx-auto">
         {children}
       </div>
     </motion.div>
+  );
+}
+
+/* ---------- Compact Modern Dropdown ---------- */
+function DropdownSection({ title, children }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="border-b border-neutral-200 last:border-none">
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex justify-between items-center w-full py-4 px-5 text-left group"
+      >
+        <span className="text-[#003466] text-base sm:text-lg font-semibold group-hover:text-[#002850] transition-all">
+          {title}
+        </span>
+        <ChevronDown
+          size={18}
+          className={`text-[#003466] transform transition-transform duration-300 ${
+            open ? "rotate-180" : ""
+          }`}
+        />
+      </button>
+
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.35, ease: "easeInOut" }}
+            className="overflow-hidden"
+          >
+            <div className="pb-5 text-neutral-700 text-sm sm:text-base leading-relaxed px-5">
+              {children}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
