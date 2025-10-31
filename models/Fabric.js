@@ -1,0 +1,105 @@
+import mongoose from "mongoose";
+
+const seoSchema = new mongoose.Schema({
+  metaTitle: { type: String, trim: true },
+  metaDescription: { type: String, trim: true },
+  keywords: [{ type: String, trim: true }],
+});
+
+// ✅ Review / Testimonial (merged)
+const reviewSchema = new mongoose.Schema(
+  {
+    customerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User", // link to registered customer if available
+      required: false,
+    },
+    name: { type: String, required: true, trim: true },
+    stars: {
+      type: Number,
+      required: true,
+      min: 1,
+      max: 5,
+      default: 5,
+    },
+    review: { type: String, required: true, trim: true },
+  },
+  { timestamps: true }
+);
+
+// ✅ FAQ
+const faqSchema = new mongoose.Schema({
+  question: { type: String, required: true, trim: true },
+  answer: { type: String, required: true, trim: true },
+});
+
+const fabricSchema = new mongoose.Schema(
+  {
+    // 🧵 General Info
+    collectionName: { type: String, required: true, trim: true },
+    name: { type: String, required: true, trim: true },
+    slug: { type: String, required: true, unique: true, lowercase: true, trim: true },
+
+    // 🖼️ Media
+    images: [{ type: String, trim: true }], // e.g., slug/1.webp, slug/2.webp, etc.
+
+    // 💰 Pricing
+    price: { type: Number, required: true }, // Original price
+    customerPrice: { type: Number, required: true },
+    boutiquePrice: { type: Number, required: true },
+
+    // 🏷️ Inventory
+    stockLeft: { type: Number, default: 0 },
+    width: { type: Number, required: true }, // in inches
+    material: { type: String, required: true, trim: true },
+    weave: { type: String, required: true, trim: true },
+    color: { type: String, required: true, trim: true },
+
+    // 🧶 Description
+    description: { type: String, required: true, trim: true },
+
+    // 🧺 Care Instructions
+    careInstructions: [{ type: String, trim: true }],
+
+    // ❓ FAQ
+    faqs: [faqSchema],
+
+    // 🌟 Reviews / Testimonials
+    reviews: [reviewSchema],
+
+    // 📈 Average Rating
+    avgStars: {
+      type: Number,
+      min: 0,
+      max: 5,
+      default: 0,
+    },
+
+    // 🔍 SEO
+    seo: seoSchema,
+
+    // 🕒 Metadata
+    status: {
+      type: String,
+      enum: ["Active", "Inactive", "Draft"],
+      default: "Active",
+    },
+  },
+  { timestamps: true }
+);
+
+// ✅ Auto-calc average stars before save
+fabricSchema.pre("save", function (next) {
+  if (this.reviews && this.reviews.length > 0) {
+    const avg =
+      this.reviews.reduce((acc, r) => acc + (r.stars || 0), 0) /
+      this.reviews.length;
+    this.avgStars = Math.round(avg * 10) / 10;
+  } else {
+    this.avgStars = 0;
+  }
+  next();
+});
+
+const Fabric = mongoose.models.Fabric || mongoose.model("Fabric", fabricSchema);
+export default Fabric;

@@ -1,0 +1,324 @@
+"use client";
+
+import { motion } from "framer-motion";
+import {
+  Minus,
+  Plus,
+  ShoppingBag,
+  Star as StarIcon,
+  StarHalf,
+  StarOff,
+} from "lucide-react";
+import React, { useState, Suspense } from "react";
+import "keen-slider/keen-slider.min.css";
+import { useKeenSlider } from "keen-slider/react";
+
+// ✅ Premium Skeleton Loader
+function FabricSkeleton() {
+  return (
+    <div className="animate-pulse max-w-7xl mx-auto pt-40 px-6 md:px-10">
+      <div className="grid md:grid-cols-2 gap-14">
+        <div className="space-y-4">
+          <div className="h-[500px] bg-neutral-200 rounded-3xl" />
+        </div>
+        <div className="space-y-6">
+          <div className="h-8 w-3/4 bg-neutral-200 rounded-lg" />
+          <div className="h-4 w-1/3 bg-neutral-200 rounded-lg" />
+          <div className="h-6 w-2/3 bg-neutral-200 rounded-lg" />
+          <div className="h-20 bg-neutral-200 rounded-2xl" />
+          <div className="h-12 w-48 bg-neutral-200 rounded-full" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function FabricClient({ fabric }) {
+  return (
+    <Suspense fallback={<FabricSkeleton />}>
+      <section className="min-h-screen bg-white text-black pt-40 pb-24 px-6 md:px-10 font-[Poppins]">
+        <div className="max-w-7xl mx-auto">
+          {/* === HEADER === */}
+          <div className="grid md:grid-cols-2 gap-14 items-start mb-20">
+            {/* Gallery with Keen Slider */}
+            <FabricImageSlider images={fabric.images} name={fabric.name} />
+
+            {/* Details */}
+            <div>
+              <h1 className="text-5xl font-bold tracking-tight mb-3">
+                {fabric.name}
+              </h1>
+              <p className="text-xl font-medium text-neutral-700 mb-8">
+                {fabric.collectionName}
+              </p>
+
+              {/* Reviews */}
+              <ReviewStars avgStars={fabric.avgStars} reviews={fabric.reviews} />
+
+              {/* Prices */}
+              <div className="mb-10">
+                <p className="text-3xl font-semibold text-black">
+                  ₹{fabric.customerPrice}{" "}
+                  <span className="text-neutral-400 text-lg line-through ml-3">
+                    ₹{fabric.price}
+                  </span>
+                </p>
+                <p className="text-sm text-neutral-700 mt-2">
+                  Boutique price: ₹{fabric.boutiquePrice} / meter
+                </p>
+                <p
+                  className={`font-medium mt-2 ${
+                    fabric.stockLeft > 0 ? "text-green-600" : "text-red-500"
+                  }`}
+                >
+                  {fabric.stockLeft > 0
+                    ? `${fabric.stockLeft} meters available`
+                    : "Out of Stock"}
+                </p>
+              </div>
+
+              {/* Qty & Add */}
+              <QtyCartSection fabric={fabric} />
+
+              {/* Fabric Meta */}
+              <div className="mt-12 border-t border-neutral-200 pt-6 text-sm">
+                <p>
+                  <strong>Width:</strong> {fabric.width} inches
+                </p>
+                <p>
+                  <strong>Material:</strong> {fabric.material}
+                </p>
+                <p>
+                  <strong>Weave:</strong> {fabric.weave}
+                </p>
+                <p>
+                  <strong>Color:</strong> {fabric.color}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* === DETAILS === */}
+          <div className="space-y-20">
+            <Section title="Description">{fabric.description}</Section>
+
+            {fabric.careInstructions?.length > 0 && (
+              <Section title="Care Instructions">
+                <ul className="list-disc list-inside space-y-1">
+                  {fabric.careInstructions.map((c, i) => (
+                    <li key={i}>{c}</li>
+                  ))}
+                </ul>
+              </Section>
+            )}
+
+            {fabric.faqs?.length > 0 && (
+              <Section title="FAQs">
+                <div className="space-y-5">
+                  {fabric.faqs.map((f, i) => (
+                    <div
+                      key={i}
+                      className="border border-neutral-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition"
+                    >
+                      <h4 className="font-semibold text-lg mb-2">
+                        {f.question}
+                      </h4>
+                      <p className="text-neutral-800">{f.answer}</p>
+                    </div>
+                  ))}
+                </div>
+              </Section>
+            )}
+
+            {fabric.reviews?.length > 0 && (
+              <Section title="Reviews & Testimonials">
+                <div className="grid sm:grid-cols-2 gap-10">
+                  {fabric.reviews.map((t, i) => (
+                    <div
+                      key={i}
+                      className="border border-neutral-200 rounded-3xl p-6 bg-white shadow-[0_5px_20px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] transition"
+                    >
+                      <p className="italic mb-3 text-neutral-900 leading-relaxed">
+                        “{t.review}”
+                      </p>
+                      <p className="font-semibold text-black">{t.name}</p>
+                      <div className="flex gap-1 mt-2">
+                        {Array.from({ length: t.stars }).map((_, j) => (
+                          <StarIcon
+                            key={j}
+                            size={16}
+                            className="text-[#FFD700] fill-[#FFD700]"
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </Section>
+            )}
+          </div>
+        </div>
+      </section>
+    </Suspense>
+  );
+}
+
+// ✅ Image Slider Component
+// ✅ Image Slider Component — Premium Version
+function FabricImageSlider({ images, name }) {
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [sliderRef, instanceRef] = useKeenSlider({
+    loop: true,
+    mode: "snap",
+    slides: { perView: 1 },
+    duration: 1200,
+    renderMode: "performance",
+    created(s) {
+      setTimeout(() => s.moveToIdx(1), 5000);
+    },
+    slideChanged(slider) {
+      setCurrentSlide(slider.track.details.rel);
+    },
+  });
+
+  // Auto slide every 5 seconds
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      instanceRef.current?.next();
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [instanceRef]);
+
+  return (
+    <div className="relative w-full group">
+      {/* Slider */}
+      <div ref={sliderRef} className="keen-slider rounded-3xl overflow-hidden">
+        {images?.map((img, i) => (
+          <div key={i} className="keen-slider__slide">
+            <motion.div
+              initial={{ opacity: 0.85, scale: 1 }}
+              whileHover={{ scale: 1.02 }}
+              transition={{ duration: 0.7 }}
+              className="relative w-full h-[600px] bg-neutral-100 flex items-center justify-center"
+            >
+              <img
+                src={img}
+                alt={`${name}-${i}`}
+                className="w-full h-full object-contain"
+              />
+
+              {/* Lux soft overlay gradient for depth */}
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/10 pointer-events-none"></div>
+            </motion.div>
+          </div>
+        ))}
+      </div>
+
+      {/* Left/Right Controls */}
+      <button
+        onClick={() => instanceRef.current?.prev()}
+        className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/80 backdrop-blur-sm hover:bg-white text-black p-3 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition duration-300"
+      >
+        ‹
+      </button>
+      <button
+        onClick={() => instanceRef.current?.next()}
+        className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/80 backdrop-blur-sm hover:bg-white text-black p-3 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition duration-300"
+      >
+        ›
+      </button>
+
+      {/* Dots Indicator */}
+      {images?.length > 1 && (
+        <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 flex gap-2">
+          {images.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => instanceRef.current?.moveToIdx(idx)}
+              className={`w-3 h-3 rounded-full transition-all ${
+                currentSlide === idx
+                  ? "bg-black scale-125 shadow-md"
+                  : "bg-neutral-400/60 hover:bg-neutral-500"
+              }`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ✅ Star Rating Component with Half Stars
+function ReviewStars({ avgStars = 0, reviews = [] }) {
+  const stars = Array.from({ length: 5 }).map((_, i) => {
+    const diff = avgStars - i;
+    if (diff >= 1)
+      return <StarIcon key={i} size={20} className="text-[#FFD700] fill-[#FFD700]" />;
+    if (diff > 0.3)
+      return <StarHalf key={i} size={20} className="text-[#FFD700] fill-[#FFD700]" />;
+    return <StarOff key={i} size={20} className="text-neutral-400" />;
+  });
+
+  return (
+    <div className="flex items-center gap-2 mb-8">
+      <div className="flex gap-1">{stars}</div>
+      <span className="text-neutral-600 text-sm">
+        ({reviews?.length || 0} reviews)
+      </span>
+    </div>
+  );
+}
+
+// ✅ Quantity & Add to Cart Section
+function QtyCartSection({ fabric }) {
+  const [qty, setQty] = useState(1);
+  const handleQtyChange = (delta) =>
+    setQty((p) => Math.max(0.25, parseFloat((p + delta).toFixed(2))));
+  const total = (fabric.customerPrice * qty).toFixed(2);
+
+  return (
+    <div className="mb-10">
+      <div className="flex items-center gap-4 mb-6">
+        <button
+          onClick={() => handleQtyChange(-0.25)}
+          className="p-3 bg-neutral-100 rounded-full hover:bg-neutral-200 transition"
+        >
+          <Minus size={16} />
+        </button>
+        <span className="text-lg font-semibold w-16 text-center">{qty}m</span>
+        <button
+          onClick={() => handleQtyChange(0.25)}
+          className="p-3 bg-neutral-100 rounded-full hover:bg-neutral-200 transition"
+        >
+          <Plus size={16} />
+        </button>
+      </div>
+
+      <p className="text-black mb-3">
+        <span className="font-semibold">Total:</span> ₹{total}
+      </p>
+
+      <button className="flex items-center gap-3 bg-black text-white px-10 py-3 rounded-full shadow-md hover:shadow-lg hover:bg-neutral-900 transition-all text-sm uppercase tracking-wide font-medium">
+        <ShoppingBag size={18} /> Add to Cart
+      </button>
+    </div>
+  );
+}
+
+// ✅ Animated Section Wrapper
+function Section({ title, children }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+    >
+      <h2 className="text-3xl font-bold mb-5 text-black tracking-tight">
+        {title}
+      </h2>
+      <div className="leading-relaxed text-neutral-900 text-base">
+        {children}
+      </div>
+    </motion.div>
+  );
+}
