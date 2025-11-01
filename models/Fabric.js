@@ -6,12 +6,11 @@ const seoSchema = new mongoose.Schema({
   keywords: [{ type: String, trim: true }],
 });
 
-// ✅ Review / Testimonial (merged)
 const reviewSchema = new mongoose.Schema(
   {
     customerId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User", // link to registered customer if available
+      ref: "User", 
       required: false,
     },
     name: { type: String, required: true, trim: true },
@@ -27,7 +26,6 @@ const reviewSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// ✅ FAQ
 const faqSchema = new mongoose.Schema({
   question: { type: String, required: true, trim: true },
   answer: { type: String, required: true, trim: true },
@@ -35,39 +33,30 @@ const faqSchema = new mongoose.Schema({
 
 const fabricSchema = new mongoose.Schema(
   {
-    // 🧵 General Info
     collectionName: { type: String, required: true, trim: true },
     name: { type: String, required: true, trim: true },
     slug: { type: String, required: true, unique: true, lowercase: true, trim: true },
 
-    // 🖼️ Media
     images: [{ type: String, trim: true }], // e.g., slug/1.webp, slug/2.webp, etc.
 
-    // 💰 Pricing
-    price: { type: Number, required: true }, // Original price
+    price: { type: Number, required: true },
     customerPrice: { type: Number, required: true },
     boutiquePrice: { type: Number, required: true },
 
-    // 🏷️ Inventory
     stockLeft: { type: Number, default: 0 },
-    width: { type: Number, required: true }, // in inches
+    width: { type: Number, required: true },
     material: { type: String, required: true, trim: true },
     weave: { type: String, required: true, trim: true },
     color: { type: String, required: true, trim: true },
 
-    // 🧶 Description
     description: { type: String, required: true, trim: true },
 
-    // 🧺 Care Instructions
     careInstructions: [{ type: String, trim: true }],
 
-    // ❓ FAQ
     faqs: [faqSchema],
 
-    // 🌟 Reviews / Testimonials
     reviews: [reviewSchema],
 
-    // 📈 Average Rating
     avgStars: {
       type: Number,
       min: 0,
@@ -75,10 +64,7 @@ const fabricSchema = new mongoose.Schema(
       default: 0,
     },
 
-    // 🔍 SEO
     seo: seoSchema,
-
-    // 🕒 Metadata
     status: {
       type: String,
       enum: ["Active", "Inactive", "Draft"],
@@ -88,7 +74,6 @@ const fabricSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// ✅ Auto-calc average stars before save
 fabricSchema.pre("save", function (next) {
   if (this.reviews && this.reviews.length > 0) {
     const avg =
