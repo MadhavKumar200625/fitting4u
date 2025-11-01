@@ -161,8 +161,8 @@ export default function FabricClient({ fabric }) {
                 <DropdownSection title="Ask a Question">
                   <p>Have queries about customization, availability, or wholesale? Reach out to us:</p>
                   <div className="mt-3 space-y-1 text-[#003466] font-medium">
-                    <p>Email: support@maisontextiles.com</p>
-                    <p>Phone: +91 98211 22345</p>
+                    <p>Email: support@fitting-4-u.com</p>
+                    <p>Phone: +91 some sample number</p>
                   </div>
                 </DropdownSection>
 
