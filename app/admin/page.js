@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { Store, Shirt, Ruler, Settings } from "lucide-react";
+import { Store, Shirt, Ruler, Settings , Palette } from "lucide-react";
 
 export default function AdminHome() {
   const sections = [
@@ -23,6 +23,12 @@ export default function AdminHome() {
       icon: <Ruler size={30} />,
       link: "/admin/home-measurements",
       desc: "Track bookings, schedule tailor visits, and manage regions.",
+    },
+    {
+      name: "Design Now", 
+      icon: <Palette size={30} />,
+      link: "/admin/design-management",
+      desc: "Manage custom designs, approve user submissions, and organize templates.",
     },
     {
       name: "Settings",
