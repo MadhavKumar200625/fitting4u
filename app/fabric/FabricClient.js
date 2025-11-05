@@ -476,7 +476,6 @@ function SearchAndFilterBar({
   );
 }
 
-/* ---------------- RADIO GROUP ---------------- */
 function RadioGroup({ title, name, options }) {
   return (
     <details className="group bg-white/70 border border-neutral-200 rounded-2xl px-4 py-3">
