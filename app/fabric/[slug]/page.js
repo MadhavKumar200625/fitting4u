@@ -3,7 +3,6 @@ import Fabric from "@/models/Fabric";
 import FabricClient from "./FabricClient";
 import { notFound } from "next/navigation";
 
-// ✅ SEO Metadata
 export async function generateMetadata({ params }) {
   await dbConnect();
   const fabric = await Fabric.findOne({ slug: params.slug }).lean();

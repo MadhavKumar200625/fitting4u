@@ -52,6 +52,11 @@ const fabricSchema = new mongoose.Schema(
     description: { type: String, required: true, trim: true },
 
     careInstructions: [{ type: String, trim: true }],
+    gender: {
+  type: String,
+  enum: ["Male", "Female", "Unisex"],
+  default: "Unisex",
+},
 
     faqs: [faqSchema],
 
