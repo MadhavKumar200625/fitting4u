@@ -337,13 +337,7 @@ function MobileFilters(props) {
 
   return (
     <>
-      {/* Floating Button */}
-      <button
-        onClick={() => setOpen(true)}
-        className="lg:hidden fixed bottom-10 left-5 z-50 bg-[#003466] text-white rounded-full px-6 py-3 shadow-lg hover:scale-105 transition"
-      >
-        Filters
-      </button>
+      
 
       {/* Animated Bottom Sheet */}
       <AnimatePresence>
