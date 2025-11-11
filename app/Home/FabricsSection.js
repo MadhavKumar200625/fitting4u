@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Link from "next/link";
 
 const fabrics = [
   {
@@ -98,9 +99,9 @@ export default function FabricShowcase() {
 
         {/* CTA */}
         <div className="mt-16 text-center">
-          <button className="px-10 py-4 bg-[var(--color-accent)] text-gray-900 font-medium text-lg rounded-full shadow-md hover:shadow-lg hover:bg-[#ffb8c4] transition-all duration-300">
+          <Link href="/fabrics" className="px-10 py-4 bg-[var(--color-accent)] text-gray-900 font-medium text-lg rounded-full shadow-md hover:shadow-lg hover:bg-[#ffb8c4] transition-all duration-300">
             Browse All Fabrics
-          </button>
+          </Link>
         </div>
       </div>
     </section>

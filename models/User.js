@@ -1,87 +1,74 @@
 import mongoose from "mongoose";
 
-const addressSchema = new mongoose.Schema({
-  fullName: { type: String, trim: true },
-  phone: { type: String, trim: true },
-  addressLine1: { type: String, trim: true },
-  addressLine2: { type: String, trim: true },
-  city: { type: String, trim: true },
-  state: { type: String, trim: true },
-  postalCode: { type: String, trim: true },
-  country: { type: String, default: "India", trim: true },
-  isDefault: { type: Boolean, default: false },
-});
-
-const userSchema = new mongoose.Schema(
+const AddressSchema = new mongoose.Schema(
   {
-    // 👤 Basic Info
-    name: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    email: {
+    street: { type: String, trim: true, default: "" },
+    city: { type: String, trim: true, default: "" },
+    state: { type: String, trim: true, default: "" },
+    district: { type: String, trim: true, default: "" },
+    postalCode: { type: String, trim: true, default: "" },
+    landmark: { type: String, trim: true, default: "" },
+    country: { type: String, trim: true, default: "India" },
+  },
+  { _id: false } 
+);
+
+const UserSchema = new mongoose.Schema(
+  {
+    phone: {
       type: String,
       required: true,
       unique: true,
-      lowercase: true,
       trim: true,
-    },
-    phone: {
-      type: String,
-      trim: true,
+      match: [/^\+91\d{10}$/, "Invalid phone number format"],
     },
 
-    // 🔐 Authentication
-    passwordHash: {
+    name: {
       type: String,
-      required: true,
-      select: false, // Excluded from queries by default
+      trim: true,
+      default: "",
     },
 
-    // 👑 Roles — controls access levels
-    role: {
+    address: {
+      type: AddressSchema,
+      default: {},
+    },
+
+    userType: {
       type: String,
-      enum: ["customer", "boutique", "admin"],
+      enum: ["boutique", "customer"],
       default: "customer",
     },
 
-    // 🧵 Boutique linkage (if owner)
-    boutiqueId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Boutique",
-      required: false,
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+    lastLogin: {
+      type: Date,
     },
 
-    // 🏠 Address Book
-    addresses: [addressSchema],
+    deviceInfo: {
+      type: String,
+      default: null,
+    },
 
-    // 💬 Reviews (reverse reference)
-    reviews: [
+    activity: [
       {
-        fabricId: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Fabric",
+        action: String, 
+        details: Object,
+        timestamp: {
+          type: Date,
+          default: Date.now,
         },
-        stars: { type: Number, min: 1, max: 5 },
-        review: { type: String, trim: true },
       },
     ],
-
-    // 🌟 Account Status
-    isVerified: { type: Boolean, default: false },
-    status: {
-      type: String,
-      enum: ["Active", "Inactive", "Suspended"],
-      default: "Active",
-    },
-
-    // 📅 Metadata
-    lastLogin: { type: Date },
   },
-  { timestamps: true }
+  {
+    timestamps: true, // adds createdAt & updatedAt automatically
+  }
 );
 
-const User = mongoose.models.User || mongoose.model("User", userSchema);
-
+// ✅ Avoid model overwrite in Next.js hot reload
+const User = mongoose.models.User || mongoose.model("User", UserSchema);
 export default User;
