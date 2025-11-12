@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSiteConfig } from "@/context/SiteConfigContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-hot-toast";
 import jwt from "jsonwebtoken";
@@ -15,6 +16,8 @@ export default function CheckoutPage() {
   const [showShipping, setShowShipping] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
+  const { config, loadingConfig } = useSiteConfig();
+  
   // Load cart + fabrics
   useEffect(() => {
     const storedCart = JSON.parse(localStorage.getItem("cart")) || [];
@@ -54,6 +57,11 @@ export default function CheckoutPage() {
       console.error("JWT invalid");
     }
   }, []);
+
+  console.log(config)
+
+  if (!config?.sections?.fabricStore)
+    return <p className="text-center mt-32 text-gray-500">Not accepting orders currently</p>;
 
   // Handle quantity change
   const updateQuantity = (id, delta) => {

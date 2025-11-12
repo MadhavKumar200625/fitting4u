@@ -3,6 +3,8 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ChatWidget from "@/components/ChatWidget";
+import { SiteConfigProvider } from "@/context/SiteConfigContext";
+import { getSiteConfig } from "@/lib/getSiteConfig";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,14 +21,17 @@ export const metadata = {
   description: "This is fitting4u dev version",
 };
 
-export default function RootLayout({ children }) {
+export default async function RootLayout({ children }) {
+  const config = await getSiteConfig();
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Header></Header>
-        {children}
+        <SiteConfigProvider initialConfig={config}>
+          {children}
+        </SiteConfigProvider>
         <Footer></Footer>
         <ChatWidget />
       </body>
