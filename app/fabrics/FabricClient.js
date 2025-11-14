@@ -110,7 +110,7 @@ export default function FabricClient({
 function FabricCard({ fabric }) {
   return (
     <Link
-      href={`/fabric/${fabric.slug}`}
+      href={`/fabrics/${fabric.slug}`}
       className="group relative bg-white/80 backdrop-blur-lg rounded-3xl border border-neutral-200 shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden"
     >
       <div className="relative w-full h-[360px] overflow-hidden">

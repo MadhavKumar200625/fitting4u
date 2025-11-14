@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import { PlusCircle, Trash2, Loader2 } from "lucide-react";
+import ImageUploader from "@/components/ImageUploader";
 
 export default function SiteConfigAdmin() {
   const [config, setConfig] = useState(null);
@@ -73,11 +74,10 @@ export default function SiteConfigAdmin() {
       </h1>
 
       <div className="max-w-5xl mx-auto bg-white rounded-3xl shadow-2xl p-8 sm:p-10 space-y-10 border border-[#003466]/10">
-
         {/* 🔹 Accepting Orders */}
         <section className="border-l-4 border-[#003466] bg-[#f9fbff] rounded-xl p-6 shadow-sm">
           <h2 className="text-xl font-bold text-[#003466] mb-4 flex items-center gap-2">
-             Accepting Orders
+            Accepting Orders
           </h2>
           <label className="flex items-center gap-3 cursor-pointer">
             <input
@@ -97,7 +97,7 @@ export default function SiteConfigAdmin() {
         {/* 🔹 Section Visibility */}
         <section className="border-l-4 border-[#ffc1cc] bg-[#fff8f9] rounded-xl p-6 shadow-sm">
           <h2 className="text-xl font-bold text-[#c12d58] mb-4 flex items-center gap-2">
-         Section Visibility
+            Section Visibility
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {Object.keys(config.sections || {}).map((key) => (
@@ -130,7 +130,7 @@ export default function SiteConfigAdmin() {
         {/* 🔹 Featured Fabrics */}
         <section className="border-l-4 border-[#003466] bg-[#f6f9ff] rounded-xl p-6 shadow-sm">
           <h2 className="text-xl font-bold text-[#003466] mb-4 flex items-center gap-2">
-             Featured Fabrics (Slug)
+            Featured Fabrics (Slug)
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {(config.homePage?.fabricsSection?.featuredFabrics || []).map(
@@ -143,7 +143,9 @@ export default function SiteConfigAdmin() {
                     type="text"
                     value={slug}
                     onChange={(e) => {
-                      const updated = [...config.homePage.fabricsSection.featuredFabrics];
+                      const updated = [
+                        ...config.homePage.fabricsSection.featuredFabrics,
+                      ];
                       updated[idx] = e.target.value;
                       setConfig({
                         ...config,
@@ -161,9 +163,10 @@ export default function SiteConfigAdmin() {
                   />
                   <button
                     onClick={() => {
-                      const updated = config.homePage.fabricsSection.featuredFabrics.filter(
-                        (_, i) => i !== idx
-                      );
+                      const updated =
+                        config.homePage.fabricsSection.featuredFabrics.filter(
+                          (_, i) => i !== idx
+                        );
                       setConfig({
                         ...config,
                         homePage: {
@@ -208,7 +211,7 @@ export default function SiteConfigAdmin() {
         {/* 🔹 Featured Boutiques */}
         <section className="border-l-4 border-[#ffc1cc] bg-[#fff7fa] rounded-xl p-6 shadow-sm">
           <h2 className="text-xl font-bold text-[#c12d58] mb-4 flex items-center gap-2">
-             Featured Boutiques
+            Featured Boutiques
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {(config.homePage?.boutiquesSection?.featuredBoutiques || []).map(
@@ -221,7 +224,9 @@ export default function SiteConfigAdmin() {
                     type="text"
                     value={id}
                     onChange={(e) => {
-                      const updated = [...config.homePage.boutiquesSection.featuredBoutiques];
+                      const updated = [
+                        ...config.homePage.boutiquesSection.featuredBoutiques,
+                      ];
                       updated[idx] = e.target.value;
                       setConfig({
                         ...config,
@@ -288,7 +293,7 @@ export default function SiteConfigAdmin() {
         {/* 🔹 Home Banners */}
         <section className="border-l-4 border-[#003466] bg-[#f5f8ff] rounded-xl p-6 shadow-sm">
           <h2 className="text-xl font-bold text-[#003466] mb-4 flex items-center gap-2">
-             Home Page Banners
+            🖼️ Home Page Banners
           </h2>
 
           {(config.homePage?.banners || []).map((b, i) => (
@@ -298,7 +303,9 @@ export default function SiteConfigAdmin() {
             >
               <button
                 onClick={() => {
-                  const updated = config.homePage.banners.filter((_, idx) => idx !== i);
+                  const updated = config.homePage.banners.filter(
+                    (_, idx) => idx !== i
+                  );
                   setConfig({
                     ...config,
                     homePage: { ...config.homePage, banners: updated },
@@ -309,8 +316,22 @@ export default function SiteConfigAdmin() {
                 <Trash2 size={18} />
               </button>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
-                {["image", "heading", "subheading", "buttonText", "buttonLink"].map(
+              {/* IMAGE UPLOADER HERE */}
+              <ImageUploader
+                value={b.image}
+                onChange={(url) => {
+                  const updated = [...config.homePage.banners];
+                  updated[i].image = url;
+                  setConfig({
+                    ...config,
+                    homePage: { ...config.homePage, banners: updated },
+                  });
+                }}
+              />
+
+              {/* Text Fields */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+                {["heading", "subheading", "buttonText", "buttonLink"].map(
                   (field) => (
                     <input
                       key={field}
@@ -333,6 +354,7 @@ export default function SiteConfigAdmin() {
             </div>
           ))}
 
+          {/* Add banner */}
           <button
             onClick={() =>
               setConfig({

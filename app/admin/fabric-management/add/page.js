@@ -100,18 +100,15 @@ const handleImageUpload = async (e) => {
     return;
   }
 
-  setUploading(true);
-
   for (let i = 0; i < files.length; i++) {
     const file = files[i];
-    const extension = file.name.split(".").pop().toLowerCase();
+    const ext = file.name.split(".").pop().toLowerCase();
     const nextIndex = form.images.length + i + 1;
 
-    // ✅ Construct the proper S3 key
-    const fileName = `fabrics/${form.slug}/${nextIndex}.${extension}`;
+    const fileName = `fabrics/${form.slug}/${nextIndex}.${ext}`;
 
     try {
-      // 1️⃣ Request presigned URL from your API
+      // 1️⃣ Get presigned URL
       const res = await fetch(
         `/api/upload?fileName=${encodeURIComponent(fileName)}&contentType=${file.type}`
       );
@@ -120,29 +117,44 @@ const handleImageUpload = async (e) => {
 
       const { uploadUrl, publicUrl } = await res.json();
 
-      // 2️⃣ Upload directly to S3
-      const upload = await fetch(uploadUrl, {
-        method: "PUT",
-        headers: { "Content-Type": file.type },
-        body: file,
+      // 2️⃣ Upload with progress using XMLHttpRequest
+      await new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open("PUT", uploadUrl);
+
+        xhr.upload.addEventListener("progress", (event) => {
+          if (event.lengthComputable) {
+            const percent = Math.round((event.loaded / event.total) * 100);
+
+            setUploadProgress((prev) => ({
+              ...prev,
+              [fileName]: percent,
+            }));
+          }
+        });
+
+        xhr.onload = () => {
+          if (xhr.status === 200) resolve();
+          else reject("Upload failed");
+        };
+
+        xhr.onerror = () => reject("Upload error");
+
+        xhr.setRequestHeader("Content-Type", file.type);
+        xhr.send(file);
       });
 
-      if (!upload.ok) throw new Error("Failed to upload image");
-
-      // 3️⃣ Save URL to the form state
+      // 3️⃣ Add image to state immediately
       setForm((prev) => ({
         ...prev,
         images: [...prev.images, publicUrl],
       }));
 
-      toast.success(`${file.name} uploaded successfully`);
+      toast.success(`${file.name} uploaded`);
     } catch (err) {
-      console.error(err);
-      toast.error(`Failed to upload ${file.name}`);
+      toast.error(`Failed: ${file.name}`);
     }
   }
-
-  setUploading(false);
 };
 
   const handleSubmit = async (e) => {

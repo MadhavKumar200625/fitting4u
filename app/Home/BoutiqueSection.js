@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Link from "next/link";
 
 const dresses = [
   {
@@ -37,7 +38,7 @@ const dresses = [
   },
 ];
 
-export default function ReadyToWear() {
+export default function BoutiqueSection() {
   return (
     <section className="py-24 bg-white relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-6 md:px-10">
@@ -116,9 +117,9 @@ export default function ReadyToWear() {
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.4 }}
         >
-          <button className="px-10 py-4 bg-gradient-to-r from-[var(--color-accent)] to-[#ffd5dd] text-gray-900 font-medium text-lg rounded-full shadow-md hover:shadow-[0_0_30px_rgba(255,193,204,0.4)] transition-all duration-300">
+          <Link href="/boutiques" className="px-10 py-4  bg-[var(--color-accent)] hover:bg-[var(--color-primary)] text-gray-900 font-medium text-lg rounded-full shadow-md hover:shadow-[0_0_30px_rgba(255,193,204,0.4)] transition-all duration-300">
             Explore Full Boutique Collection
-          </button>
+          </Link>
         </motion.div>
       </div>
 

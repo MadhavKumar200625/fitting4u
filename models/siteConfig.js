@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 // Banner structure
 const BannerSchema = new mongoose.Schema({
-  image: { type: String, required: true }, // URL of banner image
+  image: { type: String, required: true },
   heading: { type: String, trim: true, default: "" },
   subheading: { type: String, trim: true, default: "" },
   buttonText: { type: String, trim: true, default: "" },
@@ -10,38 +10,38 @@ const BannerSchema = new mongoose.Schema({
   visible: { type: Boolean, default: true },
 });
 
-// Fabric section structure
+// Fabric section structure (SLUGS instead of ObjectIds)
 const FabricSectionSchema = new mongoose.Schema({
   visible: { type: Boolean, default: true },
   featuredFabrics: [
     {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Fabric",
+      type: String, // fabric slug
+      trim: true,
     },
-  ], // Store 4 fabric IDs
+  ], 
 });
 
-// Boutique section structure
+// Boutique section structure (SLUGS instead of ObjectIds)
 const BoutiqueSectionSchema = new mongoose.Schema({
   visible: { type: Boolean, default: true },
   featuredBoutiques: [
     {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Boutique",
+      type: String, // boutique slug
+      trim: true,
     },
-  ], // Store 4 boutique IDs
+  ],
 });
 
 // Full Site Config
 const SiteConfigSchema = new mongoose.Schema(
   {
-    // 🔹 Orders
+    // Orders
     acceptingOrders: {
       type: Boolean,
       default: true,
     },
 
-    // 🔹 Section visibility
+    // Section visibility
     sections: {
       fabricStore: { type: Boolean, default: true },
       boutiques: { type: Boolean, default: true },
@@ -49,15 +49,14 @@ const SiteConfigSchema = new mongoose.Schema(
       designNow: { type: Boolean, default: false },
     },
 
-    // 🔹 Homepage data
+    // Homepage
     homePage: {
       banners: [BannerSchema],
       fabricsSection: { type: FabricSectionSchema, default: () => ({}) },
       boutiquesSection: { type: BoutiqueSectionSchema, default: () => ({}) },
     },
-
-  }
-  
+  },
+  { timestamps: true }
 );
 
 const SiteConfig =
