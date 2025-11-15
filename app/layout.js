@@ -5,6 +5,7 @@ import Footer from "@/components/Footer";
 import ChatWidget from "@/components/ChatWidget";
 import { SiteConfigProvider } from "@/context/SiteConfigContext";
 import { getSiteConfig } from "@/lib/getSiteConfig";
+export const dynamic = "force-dynamic";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
