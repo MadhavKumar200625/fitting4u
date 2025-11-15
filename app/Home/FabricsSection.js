@@ -58,7 +58,7 @@ export default async function FabricShowcase() {
                   </p>
 
                   <Link
-                    href={`/fabric/${fabric.slug}`}
+                    href={`/fabrics/${fabric.slug}`}
                     className="mt-4 px-6 py-2 rounded-full bg-white/90 text-gray-900 font-medium shadow-md hover:bg-white transition-all"
                   >
                     View Details
