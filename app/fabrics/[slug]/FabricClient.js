@@ -34,6 +34,12 @@ function FabricSkeleton() {
 
 export default function FabricClient({ fabric }) {
   const [cartQty, setCartQty] = useState(0);
+    const [isBoutiqueUser, setIsBoutiqueUser] = useState(false);
+
+  useEffect(() => {
+    const boutique = localStorage.getItem("boutique");
+    setIsBoutiqueUser(boutique === "true");
+  }, []);
 
   // Load cart data on mount
   useEffect(() => {
@@ -119,9 +125,11 @@ export default function FabricClient({ fabric }) {
                       <span className="text-neutral-400 text-xl line-through ml-2 font-normal">
                         ₹{fabric.price} / meter
                       </span>
-                      <p className="text-base text-neutral-700 mt-2">
-                        Boutique Price: ₹{fabric.boutiquePrice} / meter
-                      </p>
+                      {isBoutiqueUser && (
+  <p className="text-base text-neutral-700 mt-2">
+    Boutique Price: ₹{fabric.boutiquePrice} / meter
+  </p>
+)}
                       <p className="text-black text-base mt-1 font-medium">
                         You save ₹
                         {(fabric.price - fabric.customerPrice).toFixed(2)}
