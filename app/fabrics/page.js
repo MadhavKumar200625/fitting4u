@@ -80,6 +80,7 @@ export default async function FabricsPage({ searchParams }) {
       totalPages={totalPages}
       page={Number(page)}
       search={search}
+      searchParams={searchParams}
     />
   );
 }
