@@ -1,44 +1,65 @@
-"use client";
+import mongoose from "mongoose";
 
-import { useSiteConfig } from "@/context/SiteConfigContext";
-import Hero from "./Home/Hero";
-import FabricsSection from "./Home/FabricsSection";
-import BoutiqueSection from "./Home/BoutiqueSection";
-import HomeMeasurementSection from "./Home/HomeMeasurementSection";
-import WhyChooseUs from "./Home/WhyChooseUs";
+// Banner structure
+const BannerSchema = new mongoose.Schema({
+  image: { type: String, required: true },
+  heading: { type: String, trim: true, default: "" },
+  subheading: { type: String, trim: true, default: "" },
+  buttonText: { type: String, trim: true, default: "" },
+  buttonLink: { type: String, trim: true, default: "" },
+  visible: { type: Boolean, default: true },
+});
 
-export default function Home() {
-  const config = useSiteConfig();
+// Fabric section structure (SLUGS instead of ObjectIds)
+const FabricSectionSchema = new mongoose.Schema({
+  visible: { type: Boolean, default: true },
+  featuredFabrics: [
+    {
+      type: String, // fabric slug
+      trim: true,
+    },
+  ], 
+});
 
-  // Still loading config (first render)
-  if (!config) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-gray-600 text-lg">
-        Loading website...
-      </div>
-    );
-  }
+// Boutique section structure (SLUGS instead of ObjectIds)
+const BoutiqueSectionSchema = new mongoose.Schema({
+  visible: { type: Boolean, default: true },
+  featuredBoutiques: [
+    {
+      type: String, // boutique slug
+      trim: true,
+    },
+  ],
+});
 
-  const sections = config.sections || {};
+// Full Site Config
+const SiteConfigSchema = new mongoose.Schema(
+  {
+    // Orders
+    acceptingOrders: {
+      type: Boolean,
+      default: true,
+    },
 
-  return (
-    <div>
+    // Section visibility
+    sections: {
+      fabricStore: { type: Boolean, default: true },
+      boutiques: { type: Boolean, default: true },
+      homeMeasurement: { type: Boolean, default: true },
+      designNow: { type: Boolean, default: false },
+    },
 
-      {/* 🔹 HERO — Always visible (has its own config for banners inside it) */}
-      <Hero />
+    // Homepage
+    homePage: {
+      banners: [BannerSchema],
+      fabricsSection: { type: FabricSectionSchema, default: () => ({}) },
+      boutiquesSection: { type: BoutiqueSectionSchema, default: () => ({}) },
+    },
+  },
+  { timestamps: true }
+);
 
-      {/* 🔹 FABRIC SECTION */}
-      {sections.fabricStore && <FabricsSection />}
+const SiteConfig =
+  mongoose.models.siteconfig || mongoose.model("siteconfig", SiteConfigSchema);
 
-      {/* 🔹 BOUTIQUE SECTION */}
-      {sections.boutiques && <BoutiqueSection />}
-
-      {/* 🔹 HOME MEASUREMENT */}
-      {sections.homeMeasurement && <HomeMeasurementSection />}
-
-      {/* 🔹 WHY CHOOSE US (Keep always visible or add a toggle if needed) */}
-      <WhyChooseUs />
-
-    </div>
-  );
-}
+export default SiteConfig;
