@@ -33,5 +33,5 @@ export async function POST(req) {
   } else {
     config = await SiteConfig.create(data);
   }
-  return Response.json({ success: true});
+  return Response.json({success: true});
 }

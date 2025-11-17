@@ -10,14 +10,12 @@ export default function SiteConfigAdmin() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  // ✅ Fetch existing config
-  useEffect(() => {
-    async function fetchConfig() {
+  async function fetchConfig() {
       try {
         const res = await fetch("/api/site-config");
         const data = await res.json();
-        if (data.success && data.config) {
-          setConfig(data.config);
+        if (data) {
+          setConfig(data);
         } else {
           toast.error("Failed to fetch site config");
         }
@@ -27,6 +25,10 @@ export default function SiteConfigAdmin() {
         setLoading(false);
       }
     }
+
+  // ✅ Fetch existing config
+  useEffect(() => {
+    
     fetchConfig();
   }, []);
 
@@ -41,7 +43,7 @@ export default function SiteConfigAdmin() {
       });
       const data = await res.json();
       if (data.success) {
-        setConfig(data.config);
+        fetchConfig()
         toast.success("Configuration updated successfully!");
       } else {
         toast.error("Failed to save config");

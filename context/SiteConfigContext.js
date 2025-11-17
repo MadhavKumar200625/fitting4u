@@ -20,10 +20,11 @@ export function SiteConfigProvider({ children, initialConfig = null }) {
       const res = await fetch("/api/site-config");
       if (!res.ok) throw new Error("Failed to fetch site-config");
       const data = await res.json();
-      if (data.success && data.config) {
-        setConfig(data.config);
+      console.log(data)
+      if (data) {
+        setConfig(data);
         try {
-          localStorage.setItem("siteConfig", JSON.stringify(data.config));
+          localStorage.setItem("siteConfig", JSON.stringify(data));
         } catch (e) {
           // ignore localStorage write errors (e.g. private mode)
         }
