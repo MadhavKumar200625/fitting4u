@@ -509,7 +509,7 @@ function RadioGroup({ title, name, options }) {
 function Pagination({ current, total, searchParams }) {
   const pages = Array.from({ length: total }, (_, i) => i + 1);
 
-  // Convert searchParams → URL query string (excluding page)
+  // Remove "page" from query params
   const baseQuery = new URLSearchParams(
     Object.fromEntries(
       Object.entries(searchParams || {}).filter(([key]) => key !== "page")
@@ -517,17 +517,26 @@ function Pagination({ current, total, searchParams }) {
   ).toString();
 
   return (
-    <div className="flex justify-center mt-16">
-      <div className="flex gap-2">
+    <div className="flex justify-center mt-16 px-4">
+      {/* WRAPPER THAT FIXES RESPONSIVENESS */}
+      <div
+        className="
+          flex flex-wrap justify-center gap-2
+          max-w-full
+        "
+      >
         {pages.map((p) => (
           <Link
             key={p}
             href={`?${baseQuery}&page=${p}`}
-            className={`px-4 py-2 rounded-full text-sm font-medium border transition-all ${
-              p === current
-                ? "bg-[#003466] text-white border-[#003466]"
-                : "bg-white border-neutral-300 text-gray-700 hover:bg-neutral-100"
-            }`}
+            className={`
+              px-4 py-2 rounded-full text-sm font-medium border transition-all
+              ${
+                p === current
+                  ? "bg-[#003466] text-white border-[#003466]"
+                  : "bg-white border-neutral-300 text-gray-700 hover:bg-neutral-100"
+              }
+            `}
           >
             {p}
           </Link>

@@ -1,44 +1,36 @@
-"use client";
-
-import { useSiteConfig } from "@/context/SiteConfigContext";
+import { getSiteConfig } from "@/lib/getSiteConfig"; // Server helper
 import Hero from "./Home/Hero";
 import FabricsSection from "./Home/FabricsSection";
 import BoutiqueSection from "./Home/BoutiqueSection";
 import HomeMeasurementSection from "./Home/HomeMeasurementSection";
 import WhyChooseUs from "./Home/WhyChooseUs";
 
-export default function Home() {
-  const config = useSiteConfig();
+export const revalidate = 0;            // 🔥 Do NOT cache – always fresh
+export const dynamic = "force-dynamic"; // 🔥 Bypass Vercel static caching
 
-  // Still loading config (first render)
-  if (!config) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-gray-600 text-lg">
-        Loading website...
-      </div>
-    );
-  }
+export default async function Home() {
+  const config = await getSiteConfig();
 
-  const sections = config.sections || {};
+  const sections = config?.sections || {};
 
   return (
     <div>
+      {/* 🔵 HERO – always visible */}
+      <Hero config={config.homePage} />
 
-      {/* 🔹 HERO — Always visible (has its own config for banners inside it) */}
-      <Hero />
+      {/* 🩵 FABRIC SECTION */}
+      {sections.fabricStore && <FabricsSection config={config.homePage} />}
 
-      {/* 🔹 FABRIC SECTION */}
-      {sections.fabricStore && <FabricsSection />}
+      {/* 💖 BOUTIQUE SECTION */}
+      {sections.boutiques && <BoutiqueSection config={config.homePage} />}
 
-      {/* 🔹 BOUTIQUE SECTION */}
-      {sections.boutiques && <BoutiqueSection />}
+      {/* 🟢 HOME MEASUREMENT */}
+      {sections.homeMeasurement && (
+        <HomeMeasurementSection config={config.homePage} />
+      )}
 
-      {/* 🔹 HOME MEASUREMENT */}
-      {sections.homeMeasurement && <HomeMeasurementSection />}
-
-      {/* 🔹 WHY CHOOSE US (Keep always visible or add a toggle if needed) */}
+      {/* ⭐ ALWAYS VISIBLE */}
       <WhyChooseUs />
-
     </div>
   );
 }

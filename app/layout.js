@@ -29,11 +29,13 @@ export default async function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Header></Header>
+        
         <SiteConfigProvider initialConfig={config}>
+          <Header></Header>
           {children}
+          <Footer></Footer>
         </SiteConfigProvider>
-        <Footer></Footer>
+        
         <ChatWidget />
       </body>
     </html>

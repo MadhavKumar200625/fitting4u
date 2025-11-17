@@ -60,6 +60,6 @@ const SiteConfigSchema = new mongoose.Schema(
 );
 
 const SiteConfig =
-  mongoose.models.siteconfig || mongoose.model("siteconfig", SiteConfigSchema);
+  mongoose.models.SiteConfig || mongoose.model("SiteConfig", SiteConfigSchema);
 
 export default SiteConfig;

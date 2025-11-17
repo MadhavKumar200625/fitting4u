@@ -20,7 +20,7 @@ export async function GET() {
       },
     });
   }
-  return Response.json({ success: true, config: JSON.parse(JSON.stringify(config)) });
+  return Response.json(JSON.parse(JSON.stringify(config)));
 }
 
 export async function POST(req) {
@@ -33,5 +33,5 @@ export async function POST(req) {
   } else {
     config = await SiteConfig.create(data);
   }
-  return Response.json({ success: true, config: JSON.parse(JSON.stringify(config)) });
+  return Response.json({ success: true});
 }

@@ -28,7 +28,7 @@ export default function HeroSliderClient({ slides }) {
   const nextSlide = () => setCurrent((prev) => (prev + 1) % slides.length);
 
   return (
-    <section className="relative w-full mt-32 h-[80vh] md:h-[70vh] overflow-hidden bg-[#f9fafb]">
+    <section className="relative w-full mt-20 h-[80vh] md:h-[70vh] overflow-hidden bg-[#f9fafb]">
       {/* BACKGROUND IMAGES */}
       <div className="absolute inset-0">
         <AnimatePresence>
