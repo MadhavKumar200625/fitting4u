@@ -75,22 +75,22 @@ export const GET = async (req) => {
       Fabric.countDocuments(filter)
     ]);
 
-    return new Response(
-      JSON.stringify({
-        fabrics,
-        filters: {
-          collections,
-          materials,
-          weaves,
-          colors,
-          genders
-        },
-        total,
-        page,
-        totalPages: Math.ceil(total / limit)
-      }),
-      { status: 200 }
-    );
+    return Response.json(
+  {
+    fabrics,
+    filters: {
+      collections,
+      materials,
+      weaves,
+      colors,
+      genders
+    },
+    total,
+    page,
+    totalPages: Math.ceil(total / limit)
+  },
+  { status: 200 }
+)
 
   } catch (err) {
     console.error("FABRIC EXPLORE API ERROR:", err);
