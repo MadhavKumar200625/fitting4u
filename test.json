@@ -1,0 +1,65 @@
+{
+  "banners": [
+    {
+      "image": "https://cdn.shopify.com/s/files/1/0648/9836/7707/files/SFC0005507_1.jpg?v=1732798483",
+      "heading": "Luxury Fabrics, Curated for You",
+      "subheading": "Discover premium textures for your next masterpiece"
+    },
+    {
+      "image": "https://cdn.shopify.com/s/files/1/0648/9836/7707/files/SFC0005507_1.jpg?v=1732798483",
+      "heading": "Exclusive New Arrivals",
+      "subheading": "Handpicked fabrics now available"
+    }
+  ],
+
+  "featuredFabrics": [
+    "premium-cotton-white",
+    "crafted-linen-ocean-blue",
+    "royal-silk-gold",
+    "classic-poplin-striped"
+  ],
+
+  "categories": [
+    {
+      "name": "Cotton",
+      "image": "https://cdn.shopify.com/s/files/1/0648/9836/7707/files/SFC0005507_1.jpg?v=1732798483"
+    },
+    {
+      "name": "Linen",
+      "image": "https://cdn.shopify.com/s/files/1/0648/9836/7707/files/SFC0005507_1.jpg?v=1732798483"
+    },
+    {
+      "name": "Silk",
+      "image": "https://cdn.shopify.com/s/files/1/0648/9836/7707/files/SFC0005507_1.jpg?v=1732798483"
+    },
+    {
+      "name": "Printed",
+      "image": "https://cdn.shopify.com/s/files/1/0648/9836/7707/files/SFC0005507_1.jpg?v=1732798483"
+    }
+  ],
+
+  "weaves": [
+    {
+      "name": "Twill",
+      "image": "https://cdn.shopify.com/s/files/1/0648/9836/7707/files/SFC0005507_1.jpg?v=1732798483"
+    },
+    {
+      "name": "Poplin",
+      "image": "https://cdn.shopify.com/s/files/1/0648/9836/7707/files/SFC0005507_1.jpg?v=1732798483"
+    },
+    {
+      "name": "Satin",
+      "image": "https://cdn.shopify.com/s/files/1/0648/9836/7707/files/SFC0005507_1.jpg?v=1732798483"
+    }
+  ],
+
+  "colors": [
+    "Red",
+    "Blue",
+    "Black",
+    "White",
+    "Multicolor"
+  ],
+
+  "updatedAt": "2025-11-16T12:00:00.000Z"
+}
