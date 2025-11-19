@@ -7,14 +7,21 @@ import Fabric from "@/models/Fabric";
 export async function GET(req, { params }) {
   try {
     await dbConnect();
-    const { id } = await params;
+    const { id } = params;
 
-    const fabric =
-      (await Fabric.findById(id).lean()) ||
-      (await Fabric.findOne({ slug: id }).lean());
+    let fabric = null;
 
-    if (!fabric)
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      fabric = await Fabric.findById(id).lean();
+    }
+
+    if (!fabric) {
+      fabric = await Fabric.findOne({ slug: id }).lean();
+    }
+
+    if (!fabric) {
       return Response.json({ error: "Fabric not found" }, { status: 404 });
+    }
 
     return Response.json(fabric);
   } catch (err) {
