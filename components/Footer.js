@@ -6,11 +6,16 @@ import Link from "next/link";
 
 export default function Footer() {
   return (
-    <footer className="bg-[var(--color-primary)] text-white pt-16 pb-8 relative overflow-hidden">
-      {/* Top wave overlay */}
-      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[var(--color-accent)] to-transparent opacity-40"></div>
+    <footer className="relative bg-[#001a33] text-white pt-20 pb-10 overflow-hidden">
 
-      <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-4 sm:grid-cols-2 gap-12">
+      {/* Top curved gradient line */}
+      <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#ffc1cc] via-white/30 to-transparent"></div>
+
+      {/* Glow background */}
+      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[900px] h-[300px] bg-[#ffc1cc] blur-[140px] opacity-20 pointer-events-none"></div>
+
+      <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-4 sm:grid-cols-2 gap-14 relative">
+        
         {/* Brand */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -18,13 +23,14 @@ export default function Footer() {
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <h3 className="text-3xl font-bold mb-4">
-            <span className="text-[var(--color-accent)]">Fitting</span>
+          <h3 className="text-4xl font-extrabold mb-4">
+            <span className="text-[#ffc1cc]">Fitting</span>
             <span className="text-white">4U</span>
           </h3>
-          <p className="text-gray-300 leading-relaxed">
-            Experience the perfect blend of craftsmanship, comfort, and luxury.
-            Your fit, your fabric, your style.
+
+          <p className="text-gray-300 text-sm leading-relaxed">
+            Elevating fabrics, design and luxury tailoring — crafted to perfection,
+            made uniquely for you.
           </p>
         </motion.div>
 
@@ -35,22 +41,24 @@ export default function Footer() {
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.1 }}
         >
-          <h4 className="text-xl font-semibold mb-4 text-[var(--color-accent)]">
-            Quick Links
-          </h4>
-          <ul className="space-y-3 text-white">
-            {["Home", "Boutiques", "Fabric Store", "Home Measurement"].map(
-              (link) => (
-                <li key={link}>
-                  <Link
-                    href={`/${link.toLowerCase().replace(/\s+/g, "-")}`}
-                    className="hover:text-[var(--color-accent)] text-white transition-colors duration-300"
-                  >
-                    {link}
-                  </Link>
-                </li>
-              )
-            )}
+          <h4 className="text-xl font-semibold mb-4 text-[#ffc1cc]">Explore</h4>
+          <ul className="space-y-3 text-white/90">
+            {[
+              ["Home", "/"],
+              ["Boutiques", "/boutiques"],
+              ["Fabric Store", "/fabric-store"],
+              ["Home Measurement", "/home-measurement"],
+              ["Design Now", "/design-now"],
+            ].map(([name, href]) => (
+              <li key={name}>
+                <Link
+                  href={href}
+                  className="hover:text-[#ffc1cc] transition-all duration-300"
+                >
+                  {name}
+                </Link>
+              </li>
+            ))}
           </ul>
         </motion.div>
 
@@ -61,64 +69,61 @@ export default function Footer() {
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
-          <h4 className="text-xl font-semibold mb-4 text-[var(--color-accent)]">
-            Contact
-          </h4>
-          <ul className="space-y-3 text-gray-300">
-            <li className="flex items-center gap-2">
-              <Mail size={18} /> support@fitting4u.com
+          <h4 className="text-xl font-semibold mb-4 text-[#ffc1cc]">Contact</h4>
+          <ul className="space-y-4 text-gray-300 text-sm">
+            <li className="flex items-center gap-3">
+              <Mail size={18} className="text-[#ffc1cc]" />
+              support@fitting4u.com
             </li>
-            <li className="flex items-center gap-2">
-              <Phone size={18} /> +91 something
+            <li className="flex items-center gap-3">
+              <Phone size={18} className="text-[#ffc1cc]" />
+              +91 9876543210
             </li>
           </ul>
         </motion.div>
 
-        {/* Social Links */}
+        {/* Social */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.3 }}
         >
-          <h4 className="text-xl font-semibold mb-4 text-[var(--color-accent)]">
-            Follow Us
-          </h4>
-          <div className="flex gap-4 text-gray-300">
+          <h4 className="text-xl font-semibold mb-4 text-[#ffc1cc]">Follow Us</h4>
+
+          <div className="flex gap-4">
             {[Facebook, Instagram, Twitter].map((Icon, i) => (
               <a
                 key={i}
                 href="#"
-                className="p-2 bg-white/10 rounded-full hover:bg-[var(--color-accent)] hover:text-[var(--color-primary)] transition-all duration-300"
+                className="p-3 rounded-full bg-white/10 border border-white/10 
+                           backdrop-blur-md hover:bg-[#ffc1cc] hover:text-[#001a33]
+                           transition-all duration-300 hover:scale-110"
               >
                 <Icon size={20} />
               </a>
             ))}
           </div>
         </motion.div>
+
       </div>
 
       {/* Divider */}
-      <div className="max-w-7xl mx-auto px-6 mt-12 border-t border-white/20 pt-6 flex flex-col md:flex-row justify-between items-center text-gray-400 text-sm">
-        <p>© {new Date().getFullYear()} Fitting4U. All rights reserved.</p>
-        <div className="flex gap-4 mt-3 md:mt-0">
-          <Link
-            href="/privacy-policy"
-            className="hover:text-[var(--color-accent)] transition-colors"
-          >
+      <div className="max-w-7xl mx-auto px-6 mt-14 border-t border-white/20 pt-6 text-gray-400 text-sm flex flex-col md:flex-row justify-between items-center gap-3">
+        <p>© {new Date().getFullYear()} Fitting4U — All Rights Reserved.</p>
+
+        <div className="flex gap-6">
+          <Link href="/privacy-policy" className="hover:text-[#ffc1cc] transition-colors">
             Privacy Policy
           </Link>
-          <Link
-            href="/terms"
-            className="hover:text-[var(--color-accent)] transition-colors"
-          >
-            Terms of Service
+          <Link href="/refund-policy" className="hover:text-[#ffc1cc] transition-colors">
+            Refund Policy
+          </Link>
+          <Link href="/terms-and-conditions" className="hover:text-[#ffc1cc] transition-colors">
+            Terms & Conditions
           </Link>
         </div>
       </div>
-
-      {/* Subtle glowing background accent */}
-      <div className="absolute bottom-[-100px] left-1/2 transform -translate-x-1/2 w-[600px] h-[200px] bg-[var(--color-accent)] blur-3xl opacity-20"></div>
     </footer>
   );
 }
