@@ -1,5 +1,6 @@
 import dbConnect from "@/lib/dbConnect";
 import Fabric from "@/models/Fabric";
+import mongoose from "mongoose";
 
 // ========================
 // 🔍 GET — Single Fabric
@@ -7,7 +8,7 @@ import Fabric from "@/models/Fabric";
 export async function GET(req, { params }) {
   try {
     await dbConnect();
-    const { id } = params;
+    const { id } = await params;
 
     let fabric = null;
 
