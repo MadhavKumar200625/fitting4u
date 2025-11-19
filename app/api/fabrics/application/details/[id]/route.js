@@ -62,6 +62,11 @@ export async function GET(req, { params }) {
     if (!fabric) {
       return Response.json({ error: "Fabric not found" }, { status: 404 });
     }
+    fabric.stockLeft = fabric.stockLeft ? Number(fabric.stockLeft) : 0;
+fabric.width = fabric.width ? Number(fabric.width) : 0;
+fabric.price = fabric.price ? Number(fabric.price) : 0;
+fabric.customerPrice = fabric.customerPrice ? Number(fabric.customerPrice) : 0;
+fabric.boutiquePrice = fabric.boutiquePrice ? Number(fabric.boutiquePrice) : 0;
 
     return Response.json(fabric);
   } catch (err) {
