@@ -39,6 +39,7 @@ export async function POST(req) {
         name: f.name,
         image: f.images?.[0] || null,
         customerPrice: f.customerPrice,
+        qty,
         material: f.material,
         subtotal: itemSubtotal
       });
