@@ -24,7 +24,6 @@ export async function POST(req) {
 
     // Return data exactly as needed
     return Response.json({
-      success: true,
       items: fabrics,
       bill: {
         // Android will send qty separately
