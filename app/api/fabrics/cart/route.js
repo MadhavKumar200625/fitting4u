@@ -5,29 +5,52 @@ export async function POST(req) {
   try {
     await dbConnect();
 
-    const { ids } = await req.json();
+    const { items } = await req.json();
 
-    if (!ids || !Array.isArray(ids) || ids.length === 0) {
-      return Response.json({ success: false, error: "No fabric IDs provided" }, { status: 400 });
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return Response.json({ success: false, error: "Cart empty" }, { status: 400 });
     }
 
-    // Fetch required fabric data only
+    const ids = items.map(i => i.id);
+
+    // Only essential data + first image
     const fabrics = await Fabric.find(
       { _id: { $in: ids } },
       {
         name: 1,
-        images: { $slice: 1 }, // return only first image
+        images: { $slice: 1 },
         customerPrice: 1,
         material: 1
       }
     ).lean();
 
-    // Return data exactly as needed
+    let enriched = [];
+    let subtotal = 0;
+
+    for (const f of fabrics) {
+      const cartItem = items.find(i => i.id == f._id.toString());
+      const qty = cartItem?.qty ?? 0;
+
+      const itemSubtotal = f.customerPrice * qty;
+      subtotal += itemSubtotal;
+
+      enriched.push({
+        _id: f._id,
+        name: f.name,
+        image: f.images?.[0] || null,
+        customerPrice: f.customerPrice,
+        material: f.material,
+        subtotal: itemSubtotal
+      });
+    }
+
     return Response.json({
-      items: fabrics,
+      success: true,
+      items: enriched,
       bill: {
-        // Android will send qty separately
-        note: "Send qty array + prices to calculate totals on your side."
+        subtotal,
+        delivery: 0,
+        total: subtotal
       }
     });
 
