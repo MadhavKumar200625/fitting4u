@@ -20,7 +20,6 @@ const UserSchema = new mongoose.Schema(
       required: true,
       unique: true,
       trim: true,
-      match: [/^\+91\d{10}$/, "Invalid phone number format"],
     },
 
     name: {

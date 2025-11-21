@@ -1,41 +1,73 @@
 import { NextResponse } from "next/server";
 import User from "@/models/User";
-import dbConnect from "@/lib/dbConnect"; // your MongoDB connection utility
+import Boutique from "@/models/Boutique";
+import dbConnect from "@/lib/dbConnect";
 
 await dbConnect();
 
 /* ------------------------- CREATE USER ------------------------- */
 export async function POST(req) {
+  await dbConnect();
+
   try {
-    const body = await req.json();
-    const { phone } = body;
+    const { phone, deviceInfo } = await req.json();
 
     if (!phone) {
-      return NextResponse.json({ error: "Phone number is required" }, { status: 400 });
+      return NextResponse.json(
+        { success: false, message: "Phone number is required" },
+        { status: 400 }
+      );
     }
 
-    // Check if user exists
-    let user = await User.findOne({ phone });
+    // normalize: optional but recommended
+    const normalizedPhone = phone.trim();
 
+    /* --------------------------------------------------------
+       1) FIND USER
+    -------------------------------------------------------- */
+    let user = await User.findOne({ phone: normalizedPhone });
+
+    const deviceValue = deviceInfo?.trim() || "website"; // default
+
+
+    /* --------------------------------------------------------
+       2) CREATE OR UPDATE USER
+    -------------------------------------------------------- */
     if (!user) {
-      user = new User({
-        phone,
+      // new user
+      user = await User.create({
+        phone: normalizedPhone,
         lastLogin: new Date(),
+        deviceInfo: deviceValue,
       });
-      await user.save();
     } else {
+      // existing user → update last login & deviceInfo
       user.lastLogin = new Date();
+      user.deviceInfo = deviceValue;
       await user.save();
     }
 
+    /* --------------------------------------------------------
+       3) CHECK BOUTIQUE OWNER
+    -------------------------------------------------------- */
+    const boutique = await Boutique.findOne({ phoneNumber: normalizedPhone });
+    const isBoutique = !!boutique;
+
+    /* --------------------------------------------------------
+       4) UNIFIED RESPONSE for Android
+    -------------------------------------------------------- */
     return NextResponse.json({
       success: true,
-      message: user.isNew ? "User created" : "User updated",
-      data: user,
+      isBoutique,
+      phoneNumber: user.phone,
     });
+
   } catch (error) {
     console.error("POST /user error:", error);
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
+    return NextResponse.json(
+      { success: false, message: "Server error" },
+      { status: 500 }
+    );
   }
 }
 
