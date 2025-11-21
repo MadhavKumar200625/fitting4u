@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import User from "@/models/User";
-import Boutique from "@/models/Boutique";
+import Boutique from "@/models/boutiqueSchema";
 import dbConnect from "@/lib/dbConnect";
 
 await dbConnect();
