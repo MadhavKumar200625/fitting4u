@@ -1,7 +1,9 @@
 // pages/api/boutiques/search.js
-import dbConnect from "../../../lib/mongodb"; // your mongoose connect helper
-import Boutique from "../../../models/Boutique"; // adjust path if your model is elsewhere
-
+import { NextResponse } from "next/server";
+import dbConnect from "@/lib/dbConnect";
+import Boutique from "@/models/boutiqueSchema";
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 /**
  * City centers (example). Add/remove cities you need.
  * Each entry: [lat, lon, radiusKm]
