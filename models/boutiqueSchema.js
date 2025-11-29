@@ -61,6 +61,20 @@ const boutiqueSchema = new mongoose.Schema(
       required: true,
     },
 
+    location: {
+      type: {
+        type: String,
+        enum: ["Point"],
+        default: "Point",
+      },
+      coordinates: {
+        // [ longitude, latitude ]
+        type: [Number],
+        required: true,
+        index: "2dsphere" // ensures index creation (see note below)
+      },
+    },
+
     // Contact
     phoneNumber: {
       type: String,
@@ -132,7 +146,33 @@ const boutiqueSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+boutiqueSchema.index({ location: "2dsphere" });
 
+/* ------------------------------
+   Pre-save hook: populate `location` from lat/long if not set
+   This keeps backward compatibility for documents created before geo field existed
+   ------------------------------ */
+boutiqueSchema.pre("save", function (next) {
+  // `this` is the document
+  if (!this.location || !Array.isArray(this.location.coordinates) || this.location.coordinates.length !== 2) {
+    if (typeof this.long === "number" && typeof this.lat === "number") {
+      // coordinates must be [long, lat]
+      this.location = {
+        type: "Point",
+        coordinates: [this.long, this.lat],
+      };
+    }
+  } else {
+    // ensure coordinates order is [long, lat] if someone accidentally stored [lat, long]
+    // (best-effort, optional)
+    const [a, b] = this.location.coordinates;
+    // if lat looks like latitude range (-90..90) and long outside that, we can try to detect
+    if (Math.abs(a) <= 90 && Math.abs(b) <= 180 && this.location.coordinates[0] === this.lat && this.location.coordinates[1] === this.long) {
+      this.location.coordinates = [this.long, this.lat];
+    }
+  }
+  next();
+});
 const Boutique =
   mongoose.models.Boutique || mongoose.model("Boutique", boutiqueSchema);
 
