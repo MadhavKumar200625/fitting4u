@@ -71,7 +71,7 @@ const boutiqueSchema = new mongoose.Schema(
         // [ longitude, latitude ]
         type: [Number],
         required: true,
-        index: "2dsphere" // ensures index creation (see note below)
+        
       },
     },
 
