@@ -83,28 +83,33 @@ export default function Footer() {
         </motion.div>
 
         {/* Social */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-        >
-          <h4 className="text-xl font-semibold mb-4 text-[#ffc1cc]">Follow Us</h4>
+<motion.div
+  initial={{ opacity: 0, y: 20 }}
+  whileInView={{ opacity: 1, y: 0 }}
+  viewport={{ once: true }}
+  transition={{ duration: 0.6, delay: 0.3 }}
+>
+  <h4 className="text-xl font-semibold mb-4 text-[#ffc1cc]">Follow Us</h4>
 
-          <div className="flex gap-4">
-            {[Facebook, Instagram, Twitter].map((Icon, i) => (
-              <a
-                key={i}
-                href="javascriptvoid:()"
-                className="p-3 rounded-full bg-white/10 border border-white/10 
-                           backdrop-blur-md hover:bg-[#ffc1cc] hover:text-[#001a33]
-                           transition-all duration-300 hover:scale-110"
-              >
-                <Icon size={20} />
-              </a>
-            ))}
-          </div>
-        </motion.div>
+  <div className="flex gap-4">
+    {[
+      { Icon: Facebook, url: "https://www.facebook.com/fitting4u.in" },
+      { Icon: Instagram, url: "https://www.instagram.com/fitting4u.in/#" },
+    ].map(({ Icon, url }, i) => (
+      <a
+        key={i}
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="p-3 rounded-full bg-white/10 border border-white/10 
+                   backdrop-blur-md hover:bg-[#ffc1cc] hover:text-[#001a33]
+                   transition-all duration-300 hover:scale-110"
+      >
+        <Icon size={20} />
+      </a>
+    ))}
+  </div>
+</motion.div>
 
       </div>
 
