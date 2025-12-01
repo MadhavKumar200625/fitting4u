@@ -7,7 +7,9 @@ import { toast } from "react-hot-toast";
 import jwt from "jsonwebtoken";
 import LoginPopup from "@/components/LoginPopup";
 import { X, Truck, ShieldCheck, Sparkles, Trash2 } from "lucide-react";
-export default function CheckoutPage() {
+
+
+export default function page() {
   const [cart, setCart] = useState([]);
   const [fabrics, setFabrics] = useState([]);
   const [user, setUser] = useState(null);
@@ -99,6 +101,128 @@ const removeFromCart = (id) => {
     if (!user) return setShowLogin(true);
     setShowShipping(true);
   };
+
+  const beginPayment = async (address) => {
+  try {
+    setSubmitting(true);
+
+    // Save shipping locally
+    const shippingAddress = address;
+
+    // Create payment order
+    const res = await fetch("/api/payment/create-order", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        amount: subtotal
+      }),
+    });
+
+    const data = await res.json();
+
+    if (!data.success) {
+      toast.error("Unable to start payment");
+      return;
+    }
+
+    const order = data.order;
+
+    const options = {
+      key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+      amount: order.amount,
+      currency: "INR",
+      name: "Fitting4U",
+      description: "Fabric Order Checkout",
+      order_id: order.id,
+      theme: { color: "#003466" },
+
+      handler: async function (response) {
+        // verify
+        const verifyRes = await fetch("/api/payment/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(response),
+        });
+
+        const verify = await verifyRes.json();
+
+        if (!verify.success) {
+          toast.error("Payment verification failed");
+          return;
+        }
+
+        
+        await confirmOrderWithPayment(shippingAddress, response);
+      },
+
+      prefill: {
+        name: user?.name || "",
+        contact: user?.phone || "",
+      },
+
+      modal: {
+        ondismiss: () => setSubmitting(false),
+      },
+    };
+
+    const rzp = new window.Razorpay(options);
+    rzp.open();
+
+  } catch (err) {
+    console.error(err);
+    toast.error("Payment initiation failed");
+  } finally {
+    setSubmitting(false);
+  }
+};
+
+const confirmOrderWithPayment = async (address, payment) => {
+  try {
+    setSubmitting(true);
+
+    const orderItems = itemsWithSubtotal.map((f) => ({
+      fabricId: f._id,
+      qty: f.qty,
+      price: f.customerPrice,
+      subtotal: f.subtotal,
+    }));
+
+    const res = await fetch("/api/order", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        userPhone: user.phone,
+        items: orderItems,
+        total: subtotal,
+        address,
+
+        // ✅ store razorpay payment details
+        razorpay: {
+          orderId: payment.razorpay_order_id,
+          paymentId: payment.razorpay_payment_id,
+          signature: payment.razorpay_signature,
+        },
+      }),
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      toast.success("Order placed successfully!");
+      localStorage.removeItem("cart");
+      window.dispatchEvent(new Event("cartUpdated"));
+
+      setShowShipping(false);
+      window.location.href = "/order-success";
+    } else toast.error("Failed to create order");
+
+  } catch (err) {
+    console.error(err);
+    toast.error("Error creating order");
+  } finally {
+    setSubmitting(false);
+  }
+};
 
   const confirmOrder = async (address) => {
     try {
@@ -349,7 +473,7 @@ const removeFromCart = (id) => {
               postalCode: form.postalCode.value,
               country: form.country.value,
             };
-            confirmOrder(address);
+            beginPayment(address);
           }}
           className="space-y-4 pb-8"
         >
@@ -426,6 +550,37 @@ const removeFromCart = (id) => {
               />
             </div>
           </div>
+
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+  <label className="block text-sm font-semibold text-[#003466] mb-1">
+    Landmark
+  </label>
+  <input
+    type="text"
+    name="landmark"
+    placeholder="Nearby landmark"
+                className="w-full p-3 rounded-lg border border-[#003466]/20 bg-[#f9fbff] text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-[#003466] outline-none transition-all"
+  />
+</div>
+
+{/* District */}
+<div>
+  <label className="block text-sm font-semibold text-[#003466] mb-1">
+    District
+  </label>
+  <input
+    type="text"
+    name="district"
+    placeholder="District"
+                className="w-full p-3 rounded-lg border border-[#003466]/20 bg-[#f9fbff] text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-[#003466] outline-none transition-all"
+  />
+</div>
+          </div>
+
+          {/* Landmark */}
+
 
           {/* Postal + Country */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

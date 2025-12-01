@@ -1,719 +1,105 @@
-[
-  {
-    "title": "Urban Chic Boutique",
-    "description": "A modern boutique offering premium contemporary fashion.",
-    "tagline": "Style that defines you.",
-    "seo": {
-      "metaTitle": "Urban Chic Boutique",
-      "metaDescription": "Modern boutique offering contemporary wardrobe essentials.",
-      "keywords": ["fashion", "boutique", "urban chic"]
-    },
-    "googleAddress": "Connaught Place, New Delhi, India",
-    "lat": 28.6315,
-    "long": 77.2167,
-    "phoneNumber": "+91 9876543201",
-    "whatsappNumber": "+91 9876543201",
-    "email": "urbanchic@example.com",
-    "websiteUrl": "urban-chic-boutique",
-    "socialLinks": {
-      "x": "",
-      "facebook": "",
-      "linkedin": "",
-      "youtube": ""
-    },
-    "imageGallery": [
-      "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg",
-      "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg"
-    ],
-    "businessLogo": "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg",
-    "videoUrl": "",
-    "priceRange": "Medium",
-    "verified": true,
-    "faqs": [],
-    "businessHours": [],
-    "type": "Women",
-    "status": "Active"
-  },
-  {
-    "title": "Royal Threads",
-    "description": "Premium ethnic wear boutique specializing in handcrafted designs.",
-    "tagline": "Elegance stitched to perfection.",
-    "seo": {
-      "metaTitle": "Royal Threads",
-      "metaDescription": "Elegant boutique for handcrafted ethnic wear.",
-      "keywords": ["ethnic wear", "handcrafted", "royal threads"]
-    },
-    "googleAddress": "MG Road, Bengaluru, India",
-    "lat": 12.9758,
-    "long": 77.6055,
-    "phoneNumber": "+91 9876543202",
-    "whatsappNumber": "+91 9876543202",
-    "email": "royalthreads@example.com",
-    "websiteUrl": "royal-threads",
-    "socialLinks": {
-      "x": "",
-      "facebook": "",
-      "linkedin": "",
-      "youtube": ""
-    },
-    "imageGallery": [
-      "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg",
-      "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg"
-    ],
-    "businessLogo": "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg",
-    "videoUrl": "",
-    "priceRange": "High",
-    "verified": false,
-    "faqs": [],
-    "businessHours": [],
-    "type": "Women",
-    "status": "Active"
-  },
-  {
-    "title": "Street Mode Fashion",
-    "description": "Trendy casual streetwear for modern youth.",
-    "tagline": "Wear your attitude.",
-    "seo": {
-      "metaTitle": "Street Mode Fashion",
-      "metaDescription": "Trendy streetwear for all seasons.",
-      "keywords": ["streetwear", "casual", "youth fashion"]
-    },
-    "googleAddress": "Bandra West, Mumbai, India",
-    "lat": 19.0596,
-    "long": 72.8295,
-    "phoneNumber": "+91 9876543203",
-    "whatsappNumber": "+91 9876543203",
-    "email": "streetmode@example.com",
-    "websiteUrl": "street-mode-fashion",
-    "socialLinks": {
-      "x": "",
-      "facebook": "",
-      "linkedin": "",
-      "youtube": ""
-    },
-    "imageGallery": [
-      "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg",
-      "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg"
-    ],
-    "businessLogo": "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg",
-    "videoUrl": "",
-    "priceRange": "Low",
-    "verified": true,
-    "faqs": [],
-    "businessHours": [],
-    "type": "Unisex",
-    "status": "Active"
+{
+  "title": "Fitting4u Test Boutique",
+  "description": "A sample boutique created for testing the Fitting4u application. This boutique is used to verify UI, API responses, and geolocation-based features such as Near Me and Related listings.",
+  "tagline": "Quality tailoring & modern fashion.",
+  
+  "seo": {
+    "metaTitle": "Fitting4u Test Boutique",
+    "metaDescription": "This is a test boutique for the Fitting4u platform.",
+    "keywords": ["boutique", "fashion", "test", "fitting4u"]
   },
 
-  {
-    "title": "Elegance Couture",
-    "description": "Designer gowns and custom-tailored luxury outfits.",
-    "tagline": "Luxury tailored for you.",
-    "seo": {
-      "metaTitle": "Elegance Couture",
-      "metaDescription": "Designer couture boutique specializing in gowns.",
-      "keywords": ["couture", "designer", "luxury"]
-    },
-    "googleAddress": "Gulmohar Park, Delhi, India",
-    "lat": 28.5587,
-    "long": 77.2090,
-    "phoneNumber": "+91 9876543204",
-    "whatsappNumber": "+91 9876543204",
-    "email": "elegancecouture@example.com",
-    "websiteUrl": "elegance-couture",
-    "socialLinks": {
-      "x": "",
-      "facebook": "",
-      "linkedin": "",
-      "youtube": ""
-    },
-    "imageGallery": [
-      "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg",
-      "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg"
-    ],
-    "businessLogo": "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg",
-    "videoUrl": "",
-    "priceRange": "Luxury",
-    "verified": false,
-    "faqs": [],
-    "businessHours": [],
-    "type": "Women",
-    "status": "Active"
+  "googleAddress": "MG Road, Pune, Maharashtra, India",
+  "lat": 18.5204,
+  "long": 73.8567,
+
+  "location": {
+    "type": "Point",
+    "coordinates": [73.8567, 18.5204]
   },
 
-  {
-    "title": "Vintage Vogue",
-    "description": "Retro and vintage-inspired boutique for timeless looks.",
-    "tagline": "Where old meets gold.",
-    "seo": {
-      "metaTitle": "Vintage Vogue",
-      "metaDescription": "Retro fashion boutique with timeless outfits.",
-      "keywords": ["vintage", "retro", "boutique"]
-    },
-    "googleAddress": "Park Street, Kolkata, India",
-    "lat": 22.5538,
-    "long": 88.3524,
-    "phoneNumber": "+91 9876543205",
-    "whatsappNumber": "+91 9876543205",
-    "email": "vintagevogue@example.com",
-    "websiteUrl": "vintage-vogue",
-    "socialLinks": {
-      "x": "",
-      "facebook": "",
-      "linkedin": "",
-      "youtube": ""
-    },
-    "imageGallery": [
-      "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg",
-      "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg"
-    ],
-    "businessLogo": "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg",
-    "videoUrl": "",
-    "priceRange": "Medium",
-    "verified": true,
-    "faqs": [],
-    "businessHours": [],
-    "type": "Women",
-    "status": "Active"
+  "phoneNumber": "+917000000001",
+  "whatsappNumber": "+917000000001",
+  "email": "testboutique@fitting4u.com",
+  "websiteUrl": "fitting4u-test",
+
+  "socialLinks": {
+    "x": "https://twitter.com/fitting4utest",
+    "facebook": "https://facebook.com/fitting4utest",
+    "linkedin": "https://linkedin.com/company/fitting4utest",
+    "youtube": "https://youtube.com/@fitting4utest"
   },
 
-  {
-    "title": "Urban King Wear",
-    "description": "Premium men's fashion boutique featuring modern fits.",
-    "tagline": "Style for the modern man.",
-    "seo": {
-      "metaTitle": "Urban King Wear",
-      "metaDescription": "Men's boutique with premium modern outfits.",
-      "keywords": ["men fashion", "urban", "boutique"]
-    },
-    "googleAddress": "Cyber Hub, Gurgaon, India",
-    "lat": 28.4946,
-    "long": 77.0890,
-    "phoneNumber": "+91 9876543206",
-    "whatsappNumber": "+91 9876543206",
-    "email": "urbanking@example.com",
-    "websiteUrl": "urban-king-wear",
-    "socialLinks": {
-      "x": "",
-      "facebook": "",
-      "linkedin": "",
-      "youtube": ""
-    },
-    "imageGallery": [
-      "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg",
-      "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg"
-    ],
-    "businessLogo": "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg",
-    "videoUrl": "",
-    "priceRange": "High",
-    "verified": false,
-    "faqs": [],
-    "businessHours": [],
-    "type": "Men",
-    "status": "Active"
-  },
+  "imageGallery": [
+    "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg",
+    "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg",
+    "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg",
+    "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg"
+  ],
 
-  {
-    "title": "Fashion Loft",
-    "description": "Trendy fashion boutique offering unique collections.",
-    "tagline": "Fashion that lifts you.",
-    "seo": {
-      "metaTitle": "Fashion Loft",
-      "metaDescription": "Trendy boutique with exclusive collections.",
-      "keywords": ["fashion loft", "trendy boutique"]
-    },
-    "googleAddress": "Sector 17, Chandigarh, India",
-    "lat": 30.7410,
-    "long": 76.7821,
-    "phoneNumber": "+91 9876543207",
-    "whatsappNumber": "+91 9876543207",
-    "email": "fashionloft@example.com",
-    "websiteUrl": "fashion-loft",
-    "socialLinks": {
-      "x": "",
-      "facebook": "",
-      "linkedin": "",
-      "youtube": ""
-    },
-    "imageGallery": [
-      "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg",
-      "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg"
-    ],
-    "businessLogo": "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg",
-    "videoUrl": "",
-    "priceRange": "Medium",
-    "verified": true,
-    "faqs": [],
-    "businessHours": [],
-    "type": "Unisex",
-    "status": "Active"
-  },
+  "businessLogo": "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg",
 
-  {
-    "title": "Grace & Glam",
-    "description": "Women's boutique with glam party and luxury outfits.",
-    "tagline": "Grace meets glamour.",
-    "seo": {
-      "metaTitle": "Grace & Glam",
-      "metaDescription": "Boutique for glam and party-wear clothing.",
-      "keywords": ["glam wear", "boutique"]
-    },
-    "googleAddress": "Salt Lake City, Kolkata, India",
-    "lat": 22.5867,
-    "long": 88.4173,
-    "phoneNumber": "+91 9876543208",
-    "whatsappNumber": "+91 9876543208",
-    "email": "graceglam@example.com",
-    "websiteUrl": "grace-and-glam",
-    "socialLinks": {
-      "x": "",
-      "facebook": "",
-      "linkedin": "",
-      "youtube": ""
-    },
-    "imageGallery": [
-      "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg",
-      "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg"
-    ],
-    "businessLogo": "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg",
-    "videoUrl": "",
-    "priceRange": "High",
-    "verified": false,
-    "faqs": [],
-    "businessHours": [],
-    "type": "Women",
-    "status": "Active"
-  },
+  "videoUrl": "https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4",
 
-  {
-    "title": "The Wardrobe Hub",
-    "description": "Affordable and stylish clothing for all occasions.",
-    "tagline": "Your style, your rules.",
-    "seo": {
-      "metaTitle": "The Wardrobe Hub",
-      "metaDescription": "Affordable clothing store for daily wear.",
-      "keywords": ["wardrobe", "affordable", "daily wear"]
-    },
-    "googleAddress": "Jayanagar, Bengaluru, India",
-    "lat": 12.9250,
-    "long": 77.5938,
-    "phoneNumber": "+91 9876543209",
-    "whatsappNumber": "+91 9876543209",
-    "email": "wardrobehub@example.com",
-    "websiteUrl": "the-wardrobe-hub",
-    "socialLinks": {
-      "x": "",
-      "facebook": "",
-      "linkedin": "",
-      "youtube": ""
-    },
-    "imageGallery": [
-      "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg",
-      "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg"
-    ],
-    "businessLogo": "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg",
-    "videoUrl": "",
-    "priceRange": "Low",
-    "verified": true,
-    "faqs": [],
-    "businessHours": [],
-    "type": "Unisex",
-    "status": "Active"
-  },
+  "priceRange": "Medium",
+  "verified": true,
 
-  {
-    "title": "Elite Designer Studio",
-    "description": "Exclusive designer outfits and custom-tailored fashion.",
-    "tagline": "Where exclusivity meets creativity.",
-    "seo": {
-      "metaTitle": "Elite Designer Studio",
-      "metaDescription": "Exclusive designer studio for premium outfits.",
-      "keywords": ["designer", "premium boutique"]
+  "faqs": [
+    {
+      "question": "Do you offer custom stitching?",
+      "answer": "Yes, we provide full custom tailoring services."
     },
-    "googleAddress": "Koregaon Park, Pune, India",
-    "lat": 18.5362,
-    "long": 73.8937,
-    "phoneNumber": "+91 9876543210",
-    "whatsappNumber": "+91 9876543210",
-    "email": "elitedesign@example.com",
-    "websiteUrl": "elite-designer-studio",
-    "socialLinks": {
-      "x": "",
-      "facebook": "",
-      "linkedin": "",
-      "youtube": ""
-    },
-    "imageGallery": [
-      "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg",
-      "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg"
-    ],
-    "businessLogo": "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg",
-    "videoUrl": "",
-    "priceRange": "Luxury",
-    "verified": false,
-    "faqs": [],
-    "businessHours": [],
-    "type": "Women",
-    "status": "Active"
-  },
+    {
+      "question": "Do you deliver?",
+      "answer": "Yes, home delivery is available across Pune."
+    }
+  ],
 
-  {
-    "title": "Royal Men’s Closet",
-    "description": "Premium men’s clothing boutique with classy fits.",
-    "tagline": "Dress like a king.",
-    "seo": {
-      "metaTitle": "Royal Men’s Closet",
-      "metaDescription": "Premium boutique for men’s suits and clothing.",
-      "keywords": ["mens wear", "royal", "suits"]
+  "businessHours": [
+    {
+      "day": "Monday",
+      "open": "10:00 AM",
+      "close": "9:00 PM",
+      "isClosed": false
     },
-    "googleAddress": "CP, New Delhi, India",
-    "lat": 28.6314,
-    "long": 77.2167,
-    "phoneNumber": "+91 9876543211",
-    "whatsappNumber": "+91 9876543211",
-    "email": "royalmens@example.com",
-    "websiteUrl": "royal-mens-closet",
-    "socialLinks": {
-      "x": "",
-      "facebook": "",
-      "linkedin": "",
-      "youtube": ""
+    {
+      "day": "Tuesday",
+      "open": "10:00 AM",
+      "close": "9:00 PM",
+      "isClosed": false
     },
-    "imageGallery": [
-      "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg",
-      "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg"
-    ],
-    "businessLogo": "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg",
-    "videoUrl": "",
-    "priceRange": "High",
-    "verified": false,
-    "faqs": [],
-    "businessHours": [],
-    "type": "Men",
-    "status": "Active"
-  },
+    {
+      "day": "Wednesday",
+      "open": "10:00 AM",
+      "close": "9:00 PM",
+      "isClosed": false
+    },
+    {
+      "day": "Thursday",
+      "open": "10:00 AM",
+      "close": "9:00 PM",
+      "isClosed": false
+    },
+    {
+      "day": "Friday",
+      "open": "10:00 AM",
+      "close": "9:00 PM",
+      "isClosed": false
+    },
+    {
+      "day": "Saturday",
+      "open": "10:00 AM",
+      "close": "9:00 PM",
+      "isClosed": false
+    },
+    {
+      "day": "Sunday",
+      "open": "",
+      "close": "",
+      "isClosed": true
+    }
+  ],
 
-  {
-    "title": "Trendsetters Studio",
-    "description": "Boutique for trend-driven fashion enthusiasts.",
-    "tagline": "Be the trend.",
-    "seo": {
-      "metaTitle": "Trendsetters Studio",
-      "metaDescription": "Trendy boutique for all fashion lovers.",
-      "keywords": ["trend", "studio", "fashion"]
-    },
-    "googleAddress": "Sector 18, Noida, India",
-    "lat": 28.5708,
-    "long": 77.3261,
-    "phoneNumber": "+91 9876543212",
-    "whatsappNumber": "+91 9876543212",
-    "email": "trendsetters@example.com",
-    "websiteUrl": "trendsetters-studio",
-    "socialLinks": {
-      "x": "",
-      "facebook": "",
-      "linkedin": "",
-      "youtube": ""
-    },
-    "imageGallery": [
-      "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg",
-      "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg"
-    ],
-    "businessLogo": "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg",
-    "videoUrl": "",
-    "priceRange": "Medium",
-    "verified": true,
-    "faqs": [],
-    "businessHours": [],
-    "type": "Unisex",
-    "status": "Active"
-  },
-
-  {
-    "title": "Chic & Co.",
-    "description": "Boutique featuring chic everyday and party looks.",
-    "tagline": "Stay chic, always.",
-    "seo": {
-      "metaTitle": "Chic & Co.",
-      "metaDescription": "Chic boutique for modern women.",
-      "keywords": ["chic", "women fashion"]
-    },
-    "googleAddress": "Jubilee Hills, Hyderabad",
-    "lat": 17.4303,
-    "long": 78.4075,
-    "phoneNumber": "+91 9876543213",
-    "whatsappNumber": "+91 9876543213",
-    "email": "chicco@example.com",
-    "websiteUrl": "chic-and-co",
-    "socialLinks": {
-      "x": "",
-      "facebook": "",
-      "linkedin": "",
-      "youtube": ""
-    },
-    "imageGallery": [
-      "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg",
-      "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg"
-    ],
-    "businessLogo": "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg",
-    "videoUrl": "",
-    "priceRange": "Medium",
-    "verified": false,
-    "faqs": [],
-    "businessHours": [],
-    "type": "Women",
-    "status": "Active"
-  },
-
-  {
-    "title": "Modish Lane",
-    "description": "Boutique for elegant contemporary women’s fashion.",
-    "tagline": "Walk the modish lane.",
-    "seo": {
-      "metaTitle": "Modish Lane",
-      "metaDescription": "Contemporary boutique for stylish women.",
-      "keywords": ["modish", "women style"]
-    },
-    "googleAddress": "Anna Nagar, Chennai",
-    "lat": 13.0839,
-    "long": 80.2100,
-    "phoneNumber": "+91 9876543214",
-    "whatsappNumber": "+91 9876543214",
-    "email": "modishlane@example.com",
-    "websiteUrl": "modish-lane",
-    "socialLinks": {
-      "x": "",
-      "facebook": "",
-      "linkedin": "",
-      "youtube": ""
-    },
-    "imageGallery": [
-      "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg",
-      "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg"
-    ],
-    "businessLogo": "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg",
-    "videoUrl": "",
-    "priceRange": "Medium",
-    "verified": true,
-    "faqs": [],
-    "businessHours": [],
-    "type": "Women",
-    "status": "Active"
-  },
-
-  {
-    "title": "Dapper Men",
-    "description": "Boutique with sophisticated men’s styling essentials.",
-    "tagline": "Be dapper. Always.",
-    "seo": {
-      "metaTitle": "Dapper Men",
-      "metaDescription": "Sophisticated boutique for men’s fashion.",
-      "keywords": ["dapper", "men's fashion"]
-    },
-    "googleAddress": "BKC, Mumbai",
-    "lat": 19.0600,
-    "long": 72.8560,
-    "phoneNumber": "+91 9876543215",
-    "whatsappNumber": "+91 9876543215",
-    "email": "dappermen@example.com",
-    "websiteUrl": "dapper-men",
-    "socialLinks": {
-      "x": "",
-      "facebook": "",
-      "linkedin": "",
-      "youtube": ""
-    },
-    "imageGallery": [
-      "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg",
-      "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg"
-    ],
-    "businessLogo": "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg",
-    "videoUrl": "",
-    "priceRange": "High",
-    "verified": false,
-    "faqs": [],
-    "businessHours": [],
-    "type": "Men",
-    "status": "Active"
-  },
-
-  {
-    "title": "Fashion Avenue",
-    "description": "Trendy boutique for all fashion essentials.",
-    "tagline": "Your avenue to style.",
-    "seo": {
-      "metaTitle": "Fashion Avenue",
-      "metaDescription": "Trendy boutique offering wide range of outfits.",
-      "keywords": ["fashion", "avenue", "trend"]
-    },
-    "googleAddress": "Indiranagar, Bengaluru",
-    "lat": 12.9718,
-    "long": 77.6412,
-    "phoneNumber": "+91 9876543216",
-    "whatsappNumber": "+91 9876543216",
-    "email": "fashionavenue@example.com",
-    "websiteUrl": "fashion-avenue",
-    "socialLinks": {
-      "x": "",
-      "facebook": "",
-      "linkedin": "",
-      "youtube": ""
-    },
-    "imageGallery": [
-      "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg",
-      "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg"
-    ],
-    "businessLogo": "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg",
-    "videoUrl": "",
-    "priceRange": "Medium",
-    "verified": true,
-    "faqs": [],
-    "businessHours": [],
-    "type": "Unisex",
-    "status": "Active"
-  },
-
-  {
-    "title": "Glamour Square",
-    "description": "Women's boutique specializing in glam evening wear.",
-    "tagline": "Where glamour shines.",
-    "seo": {
-      "metaTitle": "Glamour Square",
-      "metaDescription": "Boutique for glam evening gowns and outfits.",
-      "keywords": ["glam", "women", "evening wear"]
-    },
-    "googleAddress": "South Ex, New Delhi",
-    "lat": 28.5672,
-    "long": 77.2343,
-    "phoneNumber": "+91 9876543217",
-    "whatsappNumber": "+91 9876543217",
-    "email": "glamoursquare@example.com",
-    "websiteUrl": "glamour-square",
-    "socialLinks": {
-      "x": "",
-      "facebook": "",
-      "linkedin": "",
-      "youtube": ""
-    },
-    "imageGallery": [
-      "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg",
-      "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg"
-    ],
-    "businessLogo": "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg",
-    "videoUrl": "",
-    "priceRange": "High",
-    "verified": false,
-    "faqs": [],
-    "businessHours": [],
-    "type": "Women",
-    "status": "Active"
-  },
-
-  {
-    "title": "Classy Threads",
-    "description": "Boutique offering classy timeless outfits.",
-    "tagline": "Stay classy.",
-    "seo": {
-      "metaTitle": "Classy Threads",
-      "metaDescription": "Boutique with timeless classy clothing.",
-      "keywords": ["classy", "timeless fashion"]
-    },
-    "googleAddress": "Andheri West, Mumbai",
-    "lat": 19.1360,
-    "long": 72.8300,
-    "phoneNumber": "+91 9876543218",
-    "whatsappNumber": "+91 9876543218",
-    "email": "classythreads@example.com",
-    "websiteUrl": "classy-threads",
-    "socialLinks": {
-      "x": "",
-      "facebook": "",
-      "linkedin": "",
-      "youtube": ""
-    },
-    "imageGallery": [
-      "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg",
-      "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg"
-    ],
-    "businessLogo": "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg",
-    "videoUrl": "",
-    "priceRange": "Medium",
-    "verified": true,
-    "faqs": [],
-    "businessHours": [],
-    "type": "Women",
-    "status": "Active"
-  },
-
-  {
-    "title": "Urban Attire",
-    "description": "Modern boutique with bold and stylish outfits.",
-    "tagline": "Dress with attitude.",
-    "seo": {
-      "metaTitle": "Urban Attire",
-      "metaDescription": "Modern boutique with bold styles.",
-      "keywords": ["urban", "attire", "style"]
-    },
-    "googleAddress": "Sector 62, Noida",
-    "lat": 28.6200,
-    "long": 77.3700,
-    "phoneNumber": "+91 9876543219",
-    "whatsappNumber": "+91 9876543219",
-    "email": "urbanattire@example.com",
-    "websiteUrl": "urban-attire",
-    "socialLinks": {
-      "x": "",
-      "facebook": "",
-      "linkedin": "",
-      "youtube": ""
-    },
-    "imageGallery": [
-      "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg",
-      "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg"
-    ],
-    "businessLogo": "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg",
-    "videoUrl": "",
-    "priceRange": "Medium",
-    "verified": false,
-    "faqs": [],
-    "businessHours": [],
-    "type": "Unisex",
-    "status": "Active"
-  },
-
-  {
-    "title": "Luxury Lane",
-    "description": "High-end boutique offering designer apparel.",
-    "tagline": "Where luxury begins.",
-    "seo": {
-      "metaTitle": "Luxury Lane",
-      "metaDescription": "High-end boutique for designer outfits.",
-      "keywords": ["luxury", "designer"]
-    },
-    "googleAddress": "Powai, Mumbai",
-    "lat": 19.1164,
-    "long": 72.9090,
-    "phoneNumber": "+91 9876543220",
-    "whatsappNumber": "+91 9876543220",
-    "email": "luxurylane@example.com",
-    "websiteUrl": "luxury-lane",
-    "socialLinks": {
-      "x": "",
-      "facebook": "",
-      "linkedin": "",
-      "youtube": ""
-    },
-    "imageGallery": [
-      "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg",
-      "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg"
-    ],
-    "businessLogo": "https://baggout.com/wp-content/uploads/2023/07/ABOUT-FASHION-BOUTIQUE.jpg",
-    "videoUrl": "",
-    "priceRange": "Luxury",
-    "verified": true,
-    "faqs": [],
-    "businessHours": [],
-    "type": "Unisex",
-    "status": "Active"
-  }
-]
+  "type": "Unisex",
+  "status": "Active"
+}

@@ -33,6 +33,7 @@ export default async function RootLayout({ children }) {
         <SiteConfigProvider initialConfig={config}>
           <Header></Header>
           {children}
+          <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
           <Footer></Footer>
         </SiteConfigProvider>
         

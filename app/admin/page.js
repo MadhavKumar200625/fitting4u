@@ -1,90 +1,139 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Store, Shirt, Ruler, Settings , Palette } from "lucide-react";
+import jwt from "jsonwebtoken";
+import { motion } from "framer-motion";
+
+import { Store, Shirt, Ruler, Settings, Palette } from "lucide-react";
+
+const SECTIONS = [
+  {
+    name: "Boutiques Management",
+    icon: Store,
+    link: "/admin/boutiques-management",
+  },
+  {
+    name: "Fabric Store",
+    icon: Shirt,
+    link: "/admin/fabric-management",
+  },
+  {
+    name: "Home Measurement",
+    icon: Ruler,
+    link: "/admin/home-measurements",
+  },
+  {
+    name: "Design Now",
+    icon: Palette,
+    link: "/admin/design-management",
+  },
+  {
+    name: "Settings",
+    icon: Settings,
+    link: "/admin/settings",
+  },
+  {
+    name: "Admins",
+    icon: Settings,
+    link: "/admin/admins",
+  },
+];
 
 export default function AdminHome() {
-  const sections = [
-    {
-      name: "Boutiques Management",
-      icon: <Store size={30} />,
-      link: "/admin/boutiques-management",
-      desc: "Manage all boutiques, verify them, and update their details.",
-    },
-    {
-      name: "Fabric Store Management",
-      icon: <Shirt size={30} />,
-      link: "/admin/fabric-management",
-      desc: "Control fabric categories, prices, and availability.",
-    },
-    {
-      name: "Home Measurement",
-      icon: <Ruler size={30} />,
-      link: "/admin/home-measurements",
-      desc: "Track bookings, schedule tailor visits, and manage regions.",
-    },
-    {
-      name: "Design Now", 
-      icon: <Palette size={30} />,
-      link: "/admin/design-management",
-      desc: "Manage custom designs, approve user submissions, and organize templates.",
-    },
-    {
-      name: "Settings",
-      icon: <Settings size={30} />,
-      link: "/admin/settings",
-      desc: "Manage users, permissions, and system configuration.",
-    },
-  ];
+  const [allowedRoutes, setAllowedRoutes] = useState([]);
+  const [role, setRole] = useState("");
+
+  useEffect(() => {
+    const token =
+      sessionStorage.getItem("admin_auth") ||
+      localStorage.getItem("admin_auth");
+
+    if (!token) {
+      window.location.href = "/admin/login";
+      return;
+    }
+
+    const payload = jwt.decode(token);
+
+    setRole(payload.role);
+
+    if (payload.role === "SUPER_ADMIN") {
+      setAllowedRoutes(SECTIONS.map((s) => s.link));
+    } else {
+      setAllowedRoutes(payload.routes || []);
+    }
+  }, []);
+
+  const sections = SECTIONS.filter((s) =>
+    role === "SUPER_ADMIN"
+      ? true
+      : allowedRoutes.includes(s.link)
+  );
 
   return (
-    <section className="min-h-screen bg-gradient-to-b from-[#ffffff] to-[#f9f9f9] pb-24 pt-32 px-6 md:px-10">
-      <div className="max-w-7xl mx-auto">
-        {/* Heading */}
-        <motion.div
-          className="text-center mb-16"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <h1 className="text-5xl font-bold text-gray-900 mb-4 tracking-tight">
-            Admin Dashboard
-          </h1>
-          <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-            Manage everything from one place — boutiques, fabrics, users, and more.
-          </p>
-        </motion.div>
+    <section className="min-h-screen bg-gray-100 pt-28 pb-16 px-6">
 
-        {/* Dashboard Cards */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10">
-          {sections.map((section, i) => (
+      {/* HEADER */}
+      <div className="max-w-6xl mx-auto mb-10 text-center">
+        <h1 className="text-3xl font-bold text-black">
+          Admin Dashboard
+        </h1>
+
+        <p className="text-gray-500 mt-2">
+          Manage your platform sections from one place
+        </p>
+      </div>
+
+      {/* GRID */}
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-10 max-w-6xl mx-auto">
+        {sections.map((s, i) => {
+          const Icon = s.icon;
+
+          return (
             <motion.div
-              key={section.name}
+              key={s.link}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: i * 0.1 }}
+              transition={{ delay: i * 0.1 }}
             >
               <Link
-                href={section.link}
-                className="group relative block bg-white border border-gray-100 rounded-3xl p-8 shadow-[0_10px_40px_rgba(0,0,0,0.05)] hover:shadow-[0_10px_50px_rgba(0,0,0,0.1)] transition-all duration-500"
+                href={s.link}
+                className="
+                  block p-8 bg-white rounded-3xl shadow 
+                  hover:shadow-2xl hover:-translate-y-1 
+                  transition-all duration-300 group
+                "
               >
-                <div className="flex items-center justify-center w-14 h-14 bg-[var(--color-accent)]/20 text-[var(--color-primary)] rounded-2xl mb-6 group-hover:scale-110 transition-transform duration-300">
-                  {section.icon}
+                {/* ICON */}
+                <div
+                  className="
+                    w-14 h-14
+                    flex items-center justify-center
+                    rounded-2xl
+                    bg-gray-100
+                    mb-5
+                  "
+                >
+                  <Icon
+                    size={28}
+                    className="text-black"
+                  />
                 </div>
-                <h3 className="text-2xl font-semibold text-gray-900 mb-3">
-                  {section.name}
+
+                {/* TITLE */}
+                <h3 className="text-lg font-semibold text-black mb-1">
+                  {s.name}
                 </h3>
-                <p className="text-gray-600 text-sm leading-relaxed">
-                  {section.desc}
+
+                {/* DESC */}
+                <p className="text-sm text-gray-500">
+                  Open {s.name}
                 </p>
-                <div className="absolute bottom-5 right-6 text-[var(--color-primary)] opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                  →
-                </div>
               </Link>
             </motion.div>
-          ))}
-        </div>
+          );
+        })}
       </div>
     </section>
   );

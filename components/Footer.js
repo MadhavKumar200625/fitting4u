@@ -46,9 +46,9 @@ export default function Footer() {
             {[
               ["Home", "/"],
               ["Boutiques", "/boutiques"],
-              ["Fabric Store", "/fabric-store"],
-              ["Home Measurement", "/home-measurement"],
-              ["Design Now", "/design-now"],
+              ["Fabric Store", "/fabrics"],
+              // ["Home Measurement", "/home-measurement"],
+              // ["Design Now", "/design-now"],
             ].map(([name, href]) => (
               <li key={name}>
                 <Link
@@ -95,7 +95,7 @@ export default function Footer() {
             {[Facebook, Instagram, Twitter].map((Icon, i) => (
               <a
                 key={i}
-                href="#"
+                href="javascriptvoid:()"
                 className="p-3 rounded-full bg-white/10 border border-white/10 
                            backdrop-blur-md hover:bg-[#ffc1cc] hover:text-[#001a33]
                            transition-all duration-300 hover:scale-110"
