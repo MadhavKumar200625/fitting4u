@@ -5,6 +5,7 @@ import Footer from "@/components/Footer";
 import ChatWidget from "@/components/ChatWidget";
 import { SiteConfigProvider } from "@/context/SiteConfigContext";
 import { getSiteConfig } from "@/lib/getSiteConfig";
+import Script from "next/script";
 export const dynamic = "force-dynamic";
 
 const geistSans = Geist({
@@ -33,7 +34,10 @@ export default async function RootLayout({ children }) {
         <SiteConfigProvider initialConfig={config}>
           <Header></Header>
           {children}
-          <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+          <Script
+  src="https://checkout.razorpay.com/v1/checkout.js"
+  strategy="afterInteractive"
+/>
           <Footer></Footer>
         </SiteConfigProvider>
         
