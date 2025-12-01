@@ -9,7 +9,7 @@ import LoginPopup from "@/components/LoginPopup";
 import { X, Truck, ShieldCheck, Sparkles, Trash2 } from "lucide-react";
 
 
-export default function page() {
+export default function Page() {
   const [cart, setCart] = useState([]);
   const [fabrics, setFabrics] = useState([]);
   const [user, setUser] = useState(null);
