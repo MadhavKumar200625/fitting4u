@@ -10,7 +10,7 @@ export async function POST(req) {
 
     const secret = process.env.JWT_SECRET || "dev-temp-secret";
 
-    const token = jwt.sign({ phone }, secret, { expiresIn: "30d" });
+    const token = jwt.sign({ phone }, secret);
 
     return Response.json({ token }, { status: 200 });
   } catch (err) {

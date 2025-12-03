@@ -20,6 +20,18 @@ export default function HeaderClient({ config }) {
   const [showLogin, setShowLogin] = useState(false);
   const [shrink, setShrink] = useState(false);
 
+  useEffect(() => {
+  const token =
+    localStorage.getItem("authToken") ||
+    sessionStorage.getItem("authToken");
+
+  if (token) {
+    setIsLoggedIn(true);
+  } else {
+    setIsLoggedIn(false);
+  }
+}, []);
+
   /* ----------------------------------------
       NAV TABS BASED ON CONFIG
   ---------------------------------------- */

@@ -8,7 +8,6 @@ import jwt from "jsonwebtoken";
 import LoginPopup from "@/components/LoginPopup";
 import { X, Truck, ShieldCheck, Sparkles, Trash2 } from "lucide-react";
 
-
 export default function Page() {
   const [cart, setCart] = useState([]);
   const [fabrics, setFabrics] = useState([]);
@@ -17,9 +16,60 @@ export default function Page() {
   const [showLogin, setShowLogin] = useState(false);
   const [showShipping, setShowShipping] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [deliveryType, setDeliveryType] = useState("HOME");
+  const [boutiques, setBoutiques] = useState([]);
+  const [selectedBoutique, setSelectedBoutique] = useState(null);
+  const [loadingBoutiques, setLoadingBoutiques] = useState(false);
+  const [pincode, setPincode] = useState("");
+
+  useEffect(() => {
+    if (!showShipping || deliveryType !== "BOUTIQUE") return;
+
+    if (!navigator.geolocation) {
+      toast.error("Location not supported. Please enter pincode.");
+      return;
+    }
+
+    setLoadingBoutiques(true);
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+
+          const res = await fetch(
+            `/api/boutiques/nearby?lat=${latitude}&long=${longitude}`
+          );
+
+          const data = await res.json();
+
+          if (data.success) {
+            setBoutiques(data.boutiques || []);
+          } else {
+            setBoutiques([]);
+            toast.error("Failed to load nearby boutiques");
+          }
+        } catch {
+          toast.error("Could not fetch boutiques");
+          setBoutiques([]);
+        } finally {
+          setLoadingBoutiques(false);
+        }
+      },
+      () => {
+        toast.error("Location access denied. Use pincode search.");
+        setLoadingBoutiques(false);
+      },
+      {
+        enableHighAccuracy: false,
+        timeout: 10000,
+        maximumAge: 60000,
+      }
+    );
+  }, [showShipping, deliveryType]);
 
   const { config, loadingConfig } = useSiteConfig();
-  
+
   // Load cart + fabrics
   useEffect(() => {
     const storedCart = JSON.parse(localStorage.getItem("cart")) || [];
@@ -43,6 +93,36 @@ export default function Page() {
       .finally(() => setLoading(false));
   }, []);
 
+  useEffect(() => {
+    if (deliveryType === "HOME") {
+      setSelectedBoutique(null);
+    }
+  }, [deliveryType]);
+
+  const geocodePincode = async (pincode) => {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${pincode},India`,
+      {
+        headers: { "User-Agent": "Fitting4U-Web" },
+      }
+    );
+
+    const data = await res.json();
+
+    if (!data?.[0]) throw new Error("Invalid pincode");
+
+    return {
+      lat: parseFloat(data[0].lat),
+      lng: parseFloat(data[0].lon),
+    };
+  };
+
+  const handleBoutiqueSelect = (b) => {
+    setSelectedBoutique((prev) =>
+      String(prev?._id) === String(b._id) ? null : b
+    );
+  };
+
   // Check login
   useEffect(() => {
     const token = localStorage.getItem("authToken");
@@ -60,10 +140,14 @@ export default function Page() {
     }
   }, []);
 
-  console.log(config)
+  console.log(config);
 
   if (!config?.sections?.fabricStore)
-    return <p className="text-center mt-32 text-gray-500">Not accepting orders currently</p>;
+    return (
+      <p className="text-center mt-32 text-gray-500">
+        Not accepting orders currently
+      </p>
+    );
 
   // Handle quantity change
   const updateQuantity = (id, delta) => {
@@ -79,14 +163,37 @@ export default function Page() {
     window.dispatchEvent(new Event("cartUpdated"));
   };
   // Remove an item completely from cart
-const removeFromCart = (id) => {
-  const updated = cart.filter((item) => item.id !== id);
-  setCart(updated);
-  localStorage.setItem("cart", JSON.stringify(updated));
-  window.dispatchEvent(new Event("cartUpdated"));
-  toast.success("Item removed from cart");
-};
+  const removeFromCart = (id) => {
+    const updated = cart.filter((item) => item.id !== id);
+    setCart(updated);
+    localStorage.setItem("cart", JSON.stringify(updated));
+    window.dispatchEvent(new Event("cartUpdated"));
+    toast.success("Item removed from cart");
+  };
 
+  const fetchBoutiquesFromPincode = async (pincode) => {
+    try {
+      setLoadingBoutiques(true);
+
+      const { lat, lng } = await geocodePincode(pincode);
+
+      const res = await fetch(`/api/boutiques/nearby?lat=${lat}&long=${lng}`);
+
+      const data = await res.json();
+
+      if (!data.success || !Array.isArray(data.boutiques)) {
+        throw new Error("No boutiques returned");
+      }
+
+      setBoutiques(data.boutiques);
+    } catch (err) {
+      console.error(err);
+      toast.error("Unable to find boutiques near this location");
+      setBoutiques([]);
+    } finally {
+      setLoadingBoutiques(false);
+    }
+  };
   // Totals
   const itemsWithSubtotal = fabrics.map((f) => {
     const cartItem = cart.find((c) => c.id === f._id);
@@ -102,127 +209,140 @@ const removeFromCart = (id) => {
     setShowShipping(true);
   };
 
-  const beginPayment = async (address) => {
-  try {
-    setSubmitting(true);
+  const beginPayment = async ({ deliveryType, address, boutiqueId }) => {
+    try {
+      setSubmitting(true);
 
-    // Save shipping locally
-    const shippingAddress = address;
+      // Save shipping locally
+      const shippingAddress = address;
 
-    // Create payment order
-    const res = await fetch("/api/payment/create-order", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        amount: subtotal
-      }),
-    });
+      // Create payment order
+      const res = await fetch("/api/payment/create-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: subtotal,
+        }),
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    if (!data.success) {
-      toast.error("Unable to start payment");
-      return;
-    }
+      if (!data.success) {
+        toast.error("Unable to start payment");
+        return;
+      }
 
-    const order = data.order;
+      const order = data.order;
 
-    const options = {
-      key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-      amount: order.amount,
-      currency: "INR",
-      name: "Fitting4U",
-      description: "Fabric Order Checkout",
-      order_id: order.id,
-      theme: { color: "#003466" },
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        amount: order.amount,
+        currency: "INR",
+        name: "Fitting4U",
+        description: "Fabric Order Checkout",
+        order_id: order.id,
+        theme: { color: "#003466" },
 
-      handler: async function (response) {
-        // verify
-        const verifyRes = await fetch("/api/payment/verify", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(response),
-        });
+        handler: async function (response) {
+          // verify
+          const verifyRes = await fetch("/api/payment/verify", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(response),
+          });
 
-        const verify = await verifyRes.json();
+          const verify = await verifyRes.json();
 
-        if (!verify.success) {
-          toast.error("Payment verification failed");
-          return;
-        }
+          if (!verify.success) {
+            toast.error("Payment verification failed");
+            return;
+          }
 
-        
-        await confirmOrderWithPayment(shippingAddress, response);
-      },
-
-      prefill: {
-        name: user?.name || "",
-        contact: user?.phone || "",
-      },
-
-      modal: {
-        ondismiss: () => setSubmitting(false),
-      },
-    };
-
-    const rzp = new window.Razorpay(options);
-    rzp.open();
-
-  } catch (err) {
-    console.error(err);
-    toast.error("Payment initiation failed");
-  } finally {
-    setSubmitting(false);
-  }
-};
-
-const confirmOrderWithPayment = async (address, payment) => {
-  try {
-    setSubmitting(true);
-
-    const orderItems = itemsWithSubtotal.map((f) => ({
-      fabricId: f._id,
-      qty: f.qty,
-      price: f.customerPrice,
-      subtotal: f.subtotal,
-    }));
-
-    const res = await fetch("/api/order", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        userPhone: user.phone,
-        items: orderItems,
-        total: subtotal,
-        address,
-
-        // ✅ store razorpay payment details
-        razorpay: {
-          orderId: payment.razorpay_order_id,
-          paymentId: payment.razorpay_payment_id,
-          signature: payment.razorpay_signature,
+          await confirmOrderWithPayment({
+            address: shippingAddress,
+            payment: response,
+            boutiqueId,
+            deliveryType,
+          });
         },
-      }),
-    });
 
-    const data = await res.json();
+        prefill: {
+          name: user?.name || "",
+          contact: user?.phone || "",
+        },
 
-    if (data.success) {
-      toast.success("Order placed successfully!");
-      localStorage.removeItem("cart");
-      window.dispatchEvent(new Event("cartUpdated"));
+        modal: {
+          ondismiss: () => setSubmitting(false),
+        },
+      };
 
-      setShowShipping(false);
-      window.location.href = "/order-success";
-    } else toast.error("Failed to create order");
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (err) {
+      console.error(err);
+      toast.error("Payment initiation failed");
+      setSubmitting(false);
+    } finally {
+      
+    }
+  };
 
-  } catch (err) {
-    console.error(err);
-    toast.error("Error creating order");
-  } finally {
-    setSubmitting(false);
-  }
-};
+  const confirmOrderWithPayment = async ({
+    address,
+    payment,
+    boutiqueId,
+    deliveryType,
+  }) => {
+    try {
+      setSubmitting(true);
+
+      const orderItems = itemsWithSubtotal.map((f) => ({
+        fabricId: f._id,
+        qty: f.qty,
+        price: f.customerPrice,
+        subtotal: f.subtotal,
+      }));
+
+      const res = await fetch("/api/order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userPhone: user.phone,
+          items: orderItems,
+          total: subtotal,
+
+          deliveryType,
+
+          deliveryAddress: deliveryType === "HOME" ? address : null,
+          pickupBoutiqueId: deliveryType === "BOUTIQUE" ? boutiqueId : null,
+
+          payment: {
+            provider: "razorpay",
+            orderId: payment.razorpay_order_id,
+            paymentId: payment.razorpay_payment_id,
+            signature: payment.razorpay_signature,
+            status: "PENDING", // ✅ PENDING until webhook verifies
+          },
+        }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        toast.success("Order placed successfully!");
+        localStorage.removeItem("cart");
+        window.dispatchEvent(new Event("cartUpdated"));
+
+        setShowShipping(false);
+        window.location.href = "/order-success";
+      } else toast.error("Failed to create order");
+    } catch (err) {
+      console.error(err);
+      toast.error("Error creating order");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const confirmOrder = async (address) => {
     try {
@@ -272,7 +392,6 @@ const confirmOrderWithPayment = async (address, payment) => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#f6f8fc] to-white pt-40 sm:pt-32 pb-20 px-3 sm:px-6 md:px-10 lg:px-16 font-[Poppins]">
-      
       {/* 🌟 PROMOTIONAL HEADER */}
       <div className="max-w-[1400px] mx-auto bg-white rounded-3xl shadow-md p-6 sm:p-10 mb-14 flex flex-col lg:flex-row items-center justify-between gap-8 text-center lg:text-left">
         <div className="lg:w-2/3">
@@ -280,15 +399,17 @@ const confirmOrderWithPayment = async (address, payment) => {
             Ready to Complete Your Perfect Look?
           </h1>
           <p className="text-gray-600 mt-3 text-base sm:text-lg max-w-xl mx-auto lg:mx-0">
-            You’ve chosen premium fabrics — crafted with style and comfort.
-            Add a few final touches to make it yours.
+            You’ve chosen premium fabrics — crafted with style and comfort. Add
+            a few final touches to make it yours.
           </p>
         </div>
 
         <div className="flex flex-wrap justify-center gap-6 sm:gap-10 lg:w-1/3">
-          {[{ icon: Truck, label: "Free Delivery" },
+          {[
+            { icon: Truck, label: "Free Delivery" },
             { icon: ShieldCheck, label: "Secure Payment" },
-            { icon: Sparkles, label: "Premium Quality" }].map((item, i) => (
+            { icon: Sparkles, label: "Premium Quality" },
+          ].map((item, i) => (
             <div key={i} className="flex flex-col items-center text-center">
               <item.icon className="text-[#003466]" size={32} />
               <p className="mt-2 text-sm text-gray-700 font-semibold">
@@ -301,7 +422,6 @@ const confirmOrderWithPayment = async (address, payment) => {
 
       {/* 🧾 MAIN CHECKOUT AREA */}
       <div className="max-w-[1400px] mx-auto flex flex-col lg:flex-row gap-12 xl:gap-20">
-        
         {/* LEFT - CART ITEMS */}
         <div className="flex-[2] bg-white rounded-3xl shadow-xl p-5 sm:p-8">
           <h2 className="text-2xl sm:text-3xl font-bold text-[#003466] mb-8">
@@ -328,7 +448,9 @@ const confirmOrderWithPayment = async (address, payment) => {
                 {/* DETAILS */}
                 <div className="flex-1 flex flex-col justify-between text-center sm:text-left">
                   <div>
-                    <p className="font-semibold text-gray-800 text-base sm:text-lg">{f.name}</p>
+                    <p className="font-semibold text-gray-800 text-base sm:text-lg">
+                      {f.name}
+                    </p>
                     <p className="text-sm text-gray-500 mt-1">
                       ₹{f.customerPrice}/m • {f.material}
                     </p>
@@ -356,17 +478,17 @@ const confirmOrderWithPayment = async (address, payment) => {
 
                     {/* Subtotal */}
                     <div className="flex flex-col sm:items-end items-center gap-2">
-  <p className="font-semibold text-[#003466] text-lg">
-    ₹{f.subtotal.toFixed(2)}
-  </p>
-  <button
-    onClick={() => removeFromCart(f._id)}
-    className="flex items-center gap-1 text-red-500 hover:text-red-700 text-sm font-medium transition"
-  >
-    <Trash2 size={16} />
-    Remove
-  </button>
-</div>
+                      <p className="font-semibold text-[#003466] text-lg">
+                        ₹{f.subtotal.toFixed(2)}
+                      </p>
+                      <button
+                        onClick={() => removeFromCart(f._id)}
+                        className="flex items-center gap-1 text-red-500 hover:text-red-700 text-sm font-medium transition"
+                      >
+                        <Trash2 size={16} />
+                        Remove
+                      </button>
+                    </div>
                   </div>
                 </div>
               </motion.div>
@@ -394,14 +516,14 @@ const confirmOrderWithPayment = async (address, payment) => {
               <span>₹{subtotal.toFixed(2)}</span>
             </div>
           </div>
-
-          
-
           <motion.button
-            whileTap={{ scale: 0.96 }}
-            onClick={handlePay}
+            whileTap={!submitting ? { scale: 0.96 } : undefined}
+            onClick={!submitting ? handlePay : undefined}
             disabled={submitting}
-            className="w-full mt-8 py-4 bg-[#003466] text-white rounded-full text-lg font-semibold hover:bg-[#002850] shadow-md hover:shadow-lg transition-all"
+            className="w-full mt-8 py-4 bg-[#003466] text-white rounded-full 
+             text-lg font-semibold shadow-md transition-all
+             hover:bg-[#002850] hover:shadow-lg
+             disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {submitting ? "Processing..." : "Proceed to Pay"}
           </motion.button>
@@ -409,8 +531,8 @@ const confirmOrderWithPayment = async (address, payment) => {
           <div className="mt-8 bg-gradient-to-r from-[#003466]/5 to-[#ffc1cc]/10 p-4 rounded-2xl text-sm text-center text-gray-600">
             <p className="font-semibold text-[#003466]">✨ Limited Offer:</p>
             <p>
-              Get <span className="text-[#003466] font-semibold">10% OFF</span> on
-              your next order after checkout!
+              Get <span className="text-[#003466] font-semibold">10% OFF</span>{" "}
+              on your next order after checkout!
             </p>
           </div>
         </div>
@@ -428,204 +550,371 @@ const confirmOrderWithPayment = async (address, payment) => {
 
       {/* SHIPPING POPUP */}
       {/* SHIPPING POPUP (Bottom Sheet Style) */}
-<AnimatePresence>
-  {showShipping && (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[999] flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm"
-    >
-      {/* Bottom Sheet Container */}
-      <motion.div
-        initial={{ y: "100%" }}
-        animate={{ y: 0 }}
-        exit={{ y: "100%" }}
-        transition={{ type: "spring", stiffness: 120, damping: 20 }}
-        className="bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:w-[480px] max-h-[90vh] overflow-y-auto p-6 sm:p-8 relative"
-      >
-        {/* Close Button */}
-        <button
-          onClick={() => setShowShipping(false)}
-          className="absolute top-4 right-4 text-gray-400 hover:text-[#003466]"
-        >
-          <X size={22} />
-        </button>
-
-        {/* Title */}
-        <h2 className="text-2xl font-bold text-[#003466] mb-6 text-center">
-          Shipping Details
-        </h2>
-
-        {/* Form */}
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            const form = e.target;
-            const address = {
-              name: form.name.value,
-              phone: user?.phone || "",
-              street: form.street.value,
-              landmark: form.landmark.value,
-              city: form.city.value,
-              district: form.district.value,
-              state: form.state.value,
-              postalCode: form.postalCode.value,
-              country: form.country.value,
-            };
-            beginPayment(address);
-          }}
-          className="space-y-4 pb-8"
-        >
-          {/* Full Name */}
-          <div>
-            <label className="block text-sm font-semibold text-[#003466] mb-1">
-              Full Name
-            </label>
-            <input
-              type="text"
-              name="name"
-              placeholder="Enter your full name"
-              defaultValue={user?.name || ""}
-              className="w-full p-3 rounded-lg border border-[#003466]/20 bg-[#f9fbff] text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-[#003466] outline-none transition-all"
-              required
-            />
-          </div>
-
-          {/* Phone */}
-          <div>
-            <label className="block text-sm font-semibold text-[#003466] mb-1">
-              Phone Number
-            </label>
-            <input
-              type="text"
-              name="phone"
-              readOnly
-              value={user?.phone || ""}
-              className="w-full p-3 rounded-lg border border-[#003466]/20 bg-gray-100 text-gray-700 cursor-not-allowed"
-            />
-          </div>
-
-          {/* Street */}
-          <div>
-            <label className="block text-sm font-semibold text-[#003466] mb-1">
-              Street Address
-            </label>
-            <input
-              type="text"
-              name="street"
-              placeholder="House No, Street, Locality"
-              defaultValue={user?.address?.street || ""}
-              className="w-full p-3 rounded-lg border border-[#003466]/20 bg-[#f9fbff] text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-[#003466] outline-none transition-all"
-              required
-            />
-          </div>
-
-          {/* City + State */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-sm font-semibold text-[#003466] mb-1">
-                City
-              </label>
-              <input
-                type="text"
-                name="city"
-                placeholder="City"
-                defaultValue={user?.address?.city || ""}
-                className="w-full p-3 rounded-lg border border-[#003466]/20 bg-[#f9fbff] text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-[#003466] outline-none transition-all"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-[#003466] mb-1">
-                State
-              </label>
-              <input
-                type="text"
-                name="state"
-                placeholder="State"
-                defaultValue={user?.address?.state || ""}
-                className="w-full p-3 rounded-lg border border-[#003466]/20 bg-[#f9fbff] text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-[#003466] outline-none transition-all"
-                required
-              />
-            </div>
-          </div>
-
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-  <label className="block text-sm font-semibold text-[#003466] mb-1">
-    Landmark
-  </label>
-  <input
-    type="text"
-    name="landmark"
-    placeholder="Nearby landmark"
-                className="w-full p-3 rounded-lg border border-[#003466]/20 bg-[#f9fbff] text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-[#003466] outline-none transition-all"
-  />
-</div>
-
-{/* District */}
-<div>
-  <label className="block text-sm font-semibold text-[#003466] mb-1">
-    District
-  </label>
-  <input
-    type="text"
-    name="district"
-    placeholder="District"
-                className="w-full p-3 rounded-lg border border-[#003466]/20 bg-[#f9fbff] text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-[#003466] outline-none transition-all"
-  />
-</div>
-          </div>
-
-          {/* Landmark */}
-
-
-          {/* Postal + Country */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-sm font-semibold text-[#003466] mb-1">
-                Postal Code
-              </label>
-              <input
-                type="text"
-                name="postalCode"
-                placeholder="e.g. 110001"
-                defaultValue={user?.address?.postalCode || ""}
-                className="w-full p-3 rounded-lg border border-[#003466]/20 bg-[#f9fbff] text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-[#003466] outline-none transition-all"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-[#003466] mb-1">
-                Country
-              </label>
-              <input
-                type="text"
-                name="country"
-                placeholder="Country"
-                defaultValue={user?.address?.country || "India"}
-                className="w-full p-3 rounded-lg border border-[#003466]/20 bg-[#f9fbff] text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-[#003466] outline-none transition-all"
-                required
-              />
-            </div>
-          </div>
-
-          {/* Submit */}
-          <motion.button
-            whileTap={{ scale: 0.97 }}
-            type="submit"
-            disabled={submitting}
-            className="w-full mt-6 py-3.5 bg-gradient-to-r from-[#003466] to-[#002850] text-white font-semibold rounded-full shadow hover:shadow-lg transition-all text-lg"
+      <AnimatePresence>
+        {showShipping && !submitting && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[999] flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm"
           >
-            {submitting ? "Placing Order..." : "Confirm & Create Order"}
-          </motion.button>
-        </form>
-      </motion.div>
-    </motion.div>
-  )}
-</AnimatePresence>
+            {/* Bottom Sheet Container */}
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", stiffness: 120, damping: 20 }}
+              className="bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:w-[480px] max-h-[90vh] overflow-y-auto p-6 sm:p-8 relative"
+            >
+              {/* Close Button */}
+              <button
+                onClick={() => setShowShipping(false)}
+                className="absolute top-4 right-4 text-gray-400 hover:text-[#003466]"
+              >
+                <X size={22} />
+              </button>
+
+              {/* Title */}
+              <h2 className="text-2xl font-bold text-[#003466] mb-6 text-center">
+                Shipping Details
+              </h2>
+
+              {/* Delivery Mode */}
+              <div className="flex gap-3 mb-6">
+                <button
+                  type="button"
+                  onClick={() => setDeliveryType("HOME")}
+                  className={`flex-1 py-2 rounded-lg border ${
+                    deliveryType === "HOME"
+                      ? "bg-[#003466] text-white"
+                      : "bg-white text-[#003466]"
+                  }`}
+                >
+                  Home Delivery
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setDeliveryType("BOUTIQUE")}
+                  className={`flex-1 py-2 rounded-lg border ${
+                    deliveryType === "BOUTIQUE"
+                      ? "bg-[#003466] text-white"
+                      : "bg-white text-[#003466]"
+                  }`}
+                >
+                  Pickup from Boutique
+                </button>
+              </div>
+
+              {deliveryType === "BOUTIQUE" && (
+                <div className="space-y-3">
+                  {/* PINCODE SEARCH */}
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      id="pincode"
+                      placeholder="Enter pincode to find boutiques"
+                      className="flex-1 text-black p-3 border rounded-lg"
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const pin = document
+                          .getElementById("pincode")
+                          ?.value?.trim();
+                        if (!pin || pin.length < 5) {
+                          toast.error("Please enter a valid pincode");
+                          return;
+                        }
+                        fetchBoutiquesFromPincode(pin);
+                      }}
+                      className="px-5 py-3 rounded-lg bg-[#003466] text-white font-medium hover:bg-[#002850]"
+                    >
+                      Find
+                    </button>
+                  </div>
+
+                  {loadingBoutiques && (
+                    <div className="space-y-3">
+                      {[1, 2, 3].map((i) => (
+                        <div
+                          key={i}
+                          className="flex items-center gap-4 p-4 rounded-xl border animate-pulse"
+                        >
+                          <div className="w-14 h-14 rounded-full bg-gray-200" />
+
+                          <div className="flex-1 space-y-2">
+                            <div className="h-4 bg-gray-200 rounded w-2/3" />
+                            <div className="h-3 bg-gray-200 rounded w-full" />
+                            <div className="h-3 bg-gray-200 rounded w-1/3" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {!loadingBoutiques && boutiques.length === 0 && (
+                    <p className="text-sm text-gray-500 text-center">
+                      No boutiques found near this location
+                    </p>
+                  )}
+
+                  {/* RESULTS */}
+                  {boutiques.map((b) => (
+                    <motion.div
+                      key={b._id}
+                      onClick={() => handleBoutiqueSelect(b)}
+                      whileHover={{ scale: 1.02 }}
+                      className={`flex items-center gap-4 p-4 rounded-xl border transition cursor-pointer shadow-sm
+      ${
+        String(selectedBoutique?._id) === String(b._id)
+          ? "border-[#003466] bg-gradient-to-r from-[#003466]/10 to-[#ffc1cc]/10 shadow-md"
+          : "border-gray-200 hover:border-[#003466]"
+      }`}
+                    >
+                      {/* LOGO */}
+                      <img
+                        src={b.businessLogo || "/placeholder-shop.png"}
+                        alt={b.title}
+                        className="w-14 h-14 rounded-full border object-cover bg-white"
+                      />
+
+                      {/* INFO */}
+                      <div className="flex-1 text-left">
+                        <p className="font-semibold text-[#003466]">
+                          {b.title}
+                        </p>
+                        <p className="text-xs text-gray-500 leading-tight">
+                          {b.googleAddress}
+                        </p>
+
+                        {b.distance && (
+                          <p className="text-xs mt-1 text-[#003466] font-medium">
+                            {(b.distance / 1000).toFixed(1)} km away
+                          </p>
+                        )}
+                      </div>
+
+                      {/* CHECK ICON */}
+                      {String(selectedBoutique?._id) === String(b._id) && (
+                        <div className="text-[#003466] font-bold text-xl">
+                          ✓
+                        </div>
+                      )}
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+
+              {/* Form */}
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+
+                  if (deliveryType === "BOUTIQUE" && !selectedBoutique) {
+                    toast.error("Please select a boutique");
+                    return;
+                  }
+
+                  let address = null;
+
+                  if (deliveryType === "HOME") {
+                    const form = e.target;
+                    address = {
+                      name: form.name.value,
+                      phone: user?.phone || "",
+                      street: form.street.value,
+                      landmark: form.landmark.value,
+                      city: form.city.value,
+                      district: form.district.value,
+                      state: form.state.value,
+                      postalCode: form.postalCode.value,
+                      country: form.country.value,
+                    };
+                  }
+
+                  beginPayment({
+                    deliveryType,
+                    address,
+                    boutiqueId: selectedBoutique?._id,
+                  });
+                }}
+              >
+                {deliveryType === "HOME" && (
+                  <>
+                    {/* Full Name */}
+                    <div>
+                      <label className="block text-sm font-semibold text-[#003466] mb-1">
+                        Full Name
+                      </label>
+                      <input
+                        type="text"
+                        name="name"
+                        placeholder="Enter your full name"
+                        defaultValue={user?.name || ""}
+                        className="w-full p-3 rounded-lg border border-[#003466]/20 bg-[#f9fbff] text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-[#003466] outline-none transition-all"
+                        required
+                      />
+                    </div>
+
+                    {/* Phone */}
+                    <div>
+                      <label className="block text-sm font-semibold text-[#003466] mb-1">
+                        Phone Number
+                      </label>
+                      <input
+                        type="text"
+                        name="phone"
+                        readOnly
+                        value={user?.phone || ""}
+                        className="w-full p-3 rounded-lg border border-[#003466]/20 bg-gray-100 text-gray-700 cursor-not-allowed"
+                      />
+                    </div>
+
+                    {/* Street */}
+                    <div>
+                      <label className="block text-sm font-semibold text-[#003466] mb-1">
+                        Street Address
+                      </label>
+                      <input
+                        type="text"
+                        name="street"
+                        placeholder="House No, Street, Locality"
+                        defaultValue={user?.address?.street || ""}
+                        className="w-full p-3 rounded-lg border border-[#003466]/20 bg-[#f9fbff] text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-[#003466] outline-none transition-all"
+                        required
+                      />
+                    </div>
+
+                    {/* City + State */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-sm font-semibold text-[#003466] mb-1">
+                          City
+                        </label>
+                        <input
+                          type="text"
+                          name="city"
+                          placeholder="City"
+                          defaultValue={user?.address?.city || ""}
+                          className="w-full p-3 rounded-lg border border-[#003466]/20 bg-[#f9fbff] text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-[#003466] outline-none transition-all"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-[#003466] mb-1">
+                          State
+                        </label>
+                        <input
+                          type="text"
+                          name="state"
+                          placeholder="State"
+                          defaultValue={user?.address?.state || ""}
+                          className="w-full p-3 rounded-lg border border-[#003466]/20 bg-[#f9fbff] text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-[#003466] outline-none transition-all"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-sm font-semibold text-[#003466] mb-1">
+                          Landmark
+                        </label>
+                        <input
+                          type="text"
+                          name="landmark"
+                          placeholder="Nearby landmark"
+                          className="w-full p-3 rounded-lg border border-[#003466]/20 bg-[#f9fbff] text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-[#003466] outline-none transition-all"
+                        />
+                      </div>
+
+                      {/* District */}
+                      <div>
+                        <label className="block text-sm font-semibold text-[#003466] mb-1">
+                          District
+                        </label>
+                        <input
+                          type="text"
+                          name="district"
+                          placeholder="District"
+                          className="w-full p-3 rounded-lg border border-[#003466]/20 bg-[#f9fbff] text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-[#003466] outline-none transition-all"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Landmark */}
+
+                    {/* Postal + Country */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-sm font-semibold text-[#003466] mb-1">
+                          Postal Code
+                        </label>
+                        <input
+                          type="text"
+                          name="postalCode"
+                          placeholder="e.g. 110001"
+                          defaultValue={user?.address?.postalCode || ""}
+                          className="w-full p-3 rounded-lg border border-[#003466]/20 bg-[#f9fbff] text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-[#003466] outline-none transition-all"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-[#003466] mb-1">
+                          Country
+                        </label>
+                        <input
+                          type="text"
+                          name="country"
+                          placeholder="Country"
+                          defaultValue={user?.address?.country || "India"}
+                          className="w-full p-3 rounded-lg border border-[#003466]/20 bg-[#f9fbff] text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-[#003466] outline-none transition-all"
+                          required
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* Submit */}
+
+                {deliveryType === "BOUTIQUE" && !selectedBoutique && (
+                  <p className="text-center text-sm text-red-500 font-medium mt-3">
+                    Please select a boutique to proceed
+                  </p>
+                )}
+
+                <motion.button
+                  whileTap={!submitting ? { scale: 0.97 } : undefined}
+                  type="submit"
+                  disabled={submitting}
+                  className="w-full mt-6 py-3.5 cursor-pointer bg-gradient-to-r from-[#003466] to-[#002850] 
+             text-white font-semibold rounded-full shadow text-lg
+             hover:shadow-lg transition-all
+             disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {submitting ? "Placing Order..." : "Confirm & Create Order"}
+                </motion.button>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {submitting && (
+        <div className="fixed inset-0 z-[9999] bg-black/30 backdrop-blur-sm flex items-center justify-center">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ repeat: Infinity, duration: 0.8 }}
+            className="w-16 h-16 rounded-full border-4 border-white/30 border-t-white"
+          />
+          <p className="absolute mt-28 text-white text-lg">
+            Processing payment...
+          </p>
+        </div>
+      )}
     </div>
   );
 }
