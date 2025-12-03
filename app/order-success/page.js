@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { toast } from "react-hot-toast";
+import Link from "next/link";
 import {
   CheckCircle,
   Store,
@@ -354,13 +355,13 @@ export default function Page() {
 
       {/* CTA */}
       <div className="mt-20 text-center">
-        <a
+        <Link
           href="/"
           className="inline-flex px-16 py-4 rounded-full bg-[#ffc1cc]
             text-[#001a33] font-semibold text-lg hover:bg-[#ffb1c3]"
         >
           Continue Shopping
-        </a>
+        </Link>
       </div>
     </div>
   );
