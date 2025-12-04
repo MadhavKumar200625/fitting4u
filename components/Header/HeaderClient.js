@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   ShoppingCart,
   Heart,
@@ -14,6 +15,7 @@ import Link from "next/link";
 import LoginPopup from "@/components/LoginPopup";
 
 export default function HeaderClient({ config }) {
+  const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [cartCount, setCartCount] = useState(0);
@@ -70,9 +72,12 @@ export default function HeaderClient({ config }) {
       LOGIN HELPER
   ---------------------------------------- */
   const requireLogin = (fn) => {
-    if (!isLoggedIn) return setShowLogin(true);
+  if (!isLoggedIn) {
+    setShowLogin(true);
+  } else {
     fn();
-  };
+  }
+};
 
   return (
     <>
@@ -180,10 +185,12 @@ export default function HeaderClient({ config }) {
             </Link>
 
             <User
-              size={24}
-              onClick={() => requireLogin(() => {})}
-              className="cursor-pointer hover:text-[#ffc1cc] transition"
-            />
+  size={24}
+  onClick={() =>
+    requireLogin(() => router.push("/my-account"))
+  }
+  className="cursor-pointer hover:text-[#ffc1cc] transition"
+/>
 
             {/* MOBILE MENU BUTTON */}
             <button className="xl:hidden" onClick={() => setMenuOpen(!menuOpen)}>

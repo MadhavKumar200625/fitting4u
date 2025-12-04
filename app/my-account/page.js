@@ -3,13 +3,15 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { toast } from "react-hot-toast";
+import Link from "next/link";
 import {
   User,
   Package,
   Truck,
   Store,
   LogOut,
-  Save
+  Save,
+  MapPin
 } from "lucide-react";
 
 export default function AccountPage() {
@@ -70,7 +72,7 @@ export default function AccountPage() {
   }, []);
 
   /* --------------------------------------------
-      LOGOUT
+        LOGOUT
   -------------------------------------------- */
   const logout = () => {
     localStorage.removeItem("authToken");
@@ -79,7 +81,7 @@ export default function AccountPage() {
   };
 
   /* --------------------------------------------
-      SAVE PROFILE
+        SAVE PROFILE
   -------------------------------------------- */
   const saveProfile = async () => {
     try {
@@ -119,7 +121,7 @@ export default function AccountPage() {
   };
 
   /* --------------------------------------------
-      STATES
+          STATES
   -------------------------------------------- */
   if (loading) {
     return (
@@ -136,18 +138,18 @@ export default function AccountPage() {
   if (!user) return null;
 
   /* --------------------------------------------
-      UI
+            UI
   -------------------------------------------- */
   return (
-    <div className="min-h-screen px-4 sm:px-8 lg:px-20 pt-28 pb-20 bg-gradient-to-br from-[#f6f9ff] to-white">
+    <div className="min-h-screen px-4 sm:px-8 lg:px-20 pt-28 pb-20 bg-gradient-to-br from-[#f6f9ff] to-white text-black">
 
       {/* ---------- HEADER ---------- */}
       <div className="max-w-[1600px] mx-auto flex flex-col sm:flex-row gap-6 sm:gap-0 justify-between mb-10">
         <div>
-          <h1 className="text-3xl sm:text-4xl font-bold text-[#003466]">
+          <h1 className="text-3xl sm:text-4xl font-bold text-black">
             Hello, {user.name || "Customer"} 👋
           </h1>
-          <p className="text-gray-500">
+          <p className="text-gray-600">
             Manage your orders & profile
           </p>
         </div>
@@ -159,7 +161,6 @@ export default function AccountPage() {
             px-6 py-3 rounded-full
             bg-[#003466] text-white
             hover:bg-[#002850]
-            self-start sm:self-auto
           "
         >
           <LogOut size={16} />
@@ -174,7 +175,7 @@ export default function AccountPage() {
         grid
         grid-cols-1
         lg:grid-cols-[280px_1fr]
-        gap-6 lg:gap-12
+        gap-8
       ">
 
         {/* ---------- SIDEBAR ---------- */}
@@ -184,12 +185,10 @@ export default function AccountPage() {
           shadow-lg
           p-6
           space-y-6
-          sticky top-32
         ">
-
           <div className="text-center">
             <User size={64} className="mx-auto text-[#003466]" />
-            <p className="mt-2 font-semibold text-[#003466]">
+            <p className="mt-2 font-semibold text-black">
               {user.name || "Not Set"}
             </p>
 
@@ -226,59 +225,87 @@ export default function AccountPage() {
           {/* ----------- ORDERS ----------- */}
           {activeTab === "orders" && (
             <>
-              <h2 className="text-2xl font-bold mb-4 text-[#003466]">
+              <h2 className="text-2xl font-bold mb-5 text-black">
                 My Orders
               </h2>
 
               {orders.length === 0 ? (
-                <p className="text-gray-500">No orders yet.</p>
+                <p className="text-gray-600">No orders yet.</p>
               ) : (
                 <div className="space-y-4">
                   {orders.map((o) => (
-                    <motion.div
+                    <Link
                       key={o._id}
-                      whileHover={{ scale: 1.01 }}
-                      className="
-                        p-5
-                        bg-white
-                        rounded-2xl
-                        shadow
-                        border
-                        flex
-                        flex-col sm:flex-row
-                        justify-between
-                        gap-4
-                      "
+                      href={`/orders/${o._id}`}
                     >
-                      <div>
-                        <p className="text-xs text-gray-500">Order ID</p>
-                        <p className="font-semibold text-[#003466] break-all">
-                          {o._id}
-                        </p>
+                      <motion.div
+                        whileHover={{ scale: 1.01 }}
+                        className="
+                          p-5 rounded-2xl
+                          bg-white border border-gray-200
+                          shadow hover:shadow-md
+                          transition
+                          cursor-pointer
+                          flex flex-col sm:flex-row
+                          my-6
+                          justify-between gap-5
+                        "
+                      >
+                        {/* LEFT */}
+                        <div>
+                          <p className="text-xs text-gray-500">Order ID</p>
 
-                        <p className="mt-1 text-sm text-gray-700">
-                          ₹{o.total} • {o.items.length} items
-                        </p>
-                      </div>
+                          <p className="font-semibold text-black break-all">
+                            {o._id}
+                          </p>
 
-                      <div className="text-right space-y-1">
-                        <div className="flex items-center justify-end gap-2 text-[#003466]">
-                          {o.deliveryType === "HOME" ? (
-                            <>
-                              <Truck size={14} /> Home
-                            </>
-                          ) : (
-                            <>
-                              <Store size={14} /> Boutique
-                            </>
-                          )}
+                          <p className="mt-1 text-sm text-gray-700">
+                            ₹{o.total} • {o.items.length} items
+                          </p>
                         </div>
 
-                        <p className="text-xs text-gray-500">
-                          {o.status.replace("_", " ")}
-                        </p>
-                      </div>
-                    </motion.div>
+                        {/* RIGHT */}
+                        <div className="space-y-2 text-right">
+
+                          <div className="flex items-center justify-end gap-2 text-black">
+                            {o.deliveryType === "HOME" ? (
+                              <>
+                                <Truck size={14}/> Home
+                              </>
+                            ) : (
+                              <>
+                                <Store size={14}/> Boutique
+                              </>
+                            )}
+                          </div>
+
+                          <p className="text-xs text-gray-500">
+                            {o.status.replace("_", " ")}
+                          </p>
+
+                          {/* MAP DIRECTIONS */}
+                          {o.deliveryType === "BOUTIQUE" &&
+                            o.pickupBoutiqueId?.lat &&
+                            o.pickupBoutiqueId?.long && (
+
+                              <a
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                href={`https://www.google.com/maps/dir/?api=1&destination=${o.pickupBoutiqueId.lat},${o.pickupBoutiqueId.long}`}
+                                onClick={(e) => e.stopPropagation()}
+                                className="
+                                  inline-flex items-center gap-1 text-xs
+                                  text-[#003466] hover:underline
+                                "
+                              >
+                                <MapPin size={12}/>
+                                Directions
+                              </a>
+                            )}
+                        </div>
+
+                      </motion.div>
+                    </Link>
                   ))}
                 </div>
               )}
@@ -289,7 +316,7 @@ export default function AccountPage() {
           {activeTab === "details" && (
             <div className="bg-white rounded-3xl shadow-lg p-6 sm:p-8 space-y-6">
 
-              <h2 className="text-2xl font-bold text-[#003466]">
+              <h2 className="text-2xl font-bold text-black">
                 Edit Profile
               </h2>
 
@@ -318,6 +345,7 @@ export default function AccountPage() {
 
             </div>
           )}
+
         </div>
       </div>
     </div>
@@ -335,7 +363,7 @@ function SidebarTab({ active, label, icon, onClick }) {
         transition text-sm font-semibold
         ${active
           ? "bg-[#003466] text-white"
-          : "bg-[#003466]/5 text-[#003466] hover:bg-[#003466]/10"
+          : "bg-[#003466]/5 text-black hover:bg-[#003466]/10"
         }
       `}
     >
@@ -348,15 +376,21 @@ function SidebarTab({ active, label, icon, onClick }) {
 function Input({ label, value, ...props }) {
   return (
     <div>
-      <label className="text-xs font-semibold text-[#003466] uppercase">
+      <label className="text-xs font-semibold text-black uppercase">
         {label}
       </label>
+
       <input
         value={value}
         {...props}
         className="
-          w-full mt-1 px-4 py-2 border rounded-lg
-          outline-none focus:ring-2 ring-[#ffc1cc]
+          w-full mt-1 px-4 py-2
+          border-2 border-[#003466]/40
+          rounded-lg
+          text-black
+          outline-none
+          focus:border-[#003466]
+          focus:ring-1 ring-[#003466]/30
         "
       />
     </div>

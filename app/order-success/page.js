@@ -15,7 +15,7 @@ import {
 export default function Page() {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
-
+const [showItems, setShowItems] = useState(false);
   const [showBoutiqueSelector, setShowBoutiqueSelector] = useState(false);
   const [pincode, setPincode] = useState("");
   const [boutiques, setBoutiques] = useState([]);
@@ -133,9 +133,9 @@ export default function Page() {
 
       setOrder(data.order);
       setShowBoutiqueSelector(false);
-      toast.success("Pickup location updated");
+      toast.success("Delivery location updated");
     } catch {
-      toast.error("Pickup update failed");
+      toast.error("Delivery update failed");
     }
   };
 
@@ -198,8 +198,94 @@ export default function Page() {
             <p><b className="text-[#003466]">Order ID:</b> {order._id}</p>
             <p><b className="text-[#003466]">Items:</b> {order.items.length}</p>
             <p><b className="text-[#003466]">Status:</b> {order.payment?.status}</p>
-            <p><b className="text-[#003466]">Total:</b> ₹{order.total}</p>
           </div>
+          {/* ORDER ITEMS */}
+{/* ORDER ITEMS */}
+<div className="mt-8 space-y-4">
+  <h3 className="text-xl font-bold text-[#003466]">
+    Ordered Items
+  </h3>
+
+  {order.items.map((item, i) => (
+    <Link
+      key={i}
+      href={`/fabrics/${item.fabric.slug}`}
+      className="
+        flex items-center justify-between gap-4
+        p-4 rounded-xl bg-white border border-gray-200 shadow-sm
+        hover:border-[#003466] hover:shadow-md transition
+        group
+      "
+    >
+      {/* ---------- LEFT ---------- */}
+      <div className="flex items-center gap-4">
+
+        {/* FABRIC IMAGE */}
+        <div className="
+          w-14 h-14 rounded-full overflow-hidden border
+          bg-gray-50 shrink-0
+          group-hover:scale-[1.05]
+          transition
+        ">
+          {item.fabric?.image ? (
+            <img
+              src={`${item.fabric.image}`}
+              alt={item.fabric.name}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="
+              w-full h-full flex items-center justify-center
+              text-xs text-gray-400
+            ">
+              No Image
+            </div>
+          )}
+        </div>
+
+        {/* TEXT */}
+        <div className="space-y-1">
+          <p className="font-semibold text-gray-900">
+            {item.fabric.name}
+          </p>
+
+          <p className="text-sm text-gray-500">
+            Qty: {item.qty} meter(s)
+          </p>
+
+          {item.fabric?.category && (
+            <p className="text-xs text-gray-400">
+              {item.fabric.category}
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* ---------- RIGHT ---------- */}
+      <div className="text-right space-y-1">
+        <p className="text-sm">
+          ₹{item.price} / meter
+        </p>
+
+        <p className="font-semibold text-[#003466]">
+          ₹{item.subtotal}
+        </p>
+      </div>
+    </Link>
+  ))}
+
+  {/* TOTAL */}
+  <div
+    className="
+      mt-4 flex justify-between items-center
+      border-t pt-4
+      text-lg font-bold text-[#003466]
+    "
+  >
+    <span>Total</span>
+    <span>₹{order.total}</span>
+  </div>
+</div>
 
           {/* DELIVERY MODE */}
           <div className="p-6 rounded-2xl bg-[#003466]/5 flex gap-4 border border-[#003466]/10">
@@ -219,7 +305,7 @@ export default function Page() {
               <>
                 <Store size={28} className="text-[#003466]" />
                 <div>
-                  <p className="font-semibold text-[#003466]">Pickup from Boutique</p>
+                  <p className="font-semibold text-[#003466]">Delivery to Boutique</p>
                   <p className="text-sm text-gray-700 mt-1">
                     {order.pickupBoutiqueId?.title}
                   </p>
@@ -230,6 +316,7 @@ export default function Page() {
               </>
             )}
           </div>
+        
         </div>
 
         {/* ---------- RIGHT SECTION: BOUTIQUE + CHANGE ---------- */}
@@ -242,7 +329,7 @@ export default function Page() {
               className="p-8 rounded-3xl border border-[#003466]/15 bg-white shadow-xl space-y-4"
             >
               <h3 className="text-xl font-bold text-[#003466]">
-                Pickup Location
+                Delivery Location
               </h3>
 
               <p className="text-lg font-semibold text-gray-800">
@@ -280,7 +367,7 @@ export default function Page() {
           {order.deliveryType === "HOME" && (
             <>
               <h3 className="text-xl font-bold text-[#003466]">
-                Switch to Boutique Pickup
+                Switch to Boutique Delivery
               </h3>
 
               <button
@@ -341,7 +428,7 @@ export default function Page() {
                         bg-gradient-to-r from-[#003466] to-[#002850]
                         text-white font-semibold flex items-center justify-center gap-2"
                     >
-                      Confirm Pickup
+                      Confirm Delivery
                       <ArrowRight size={18} />
                     </button>
                   )}

@@ -602,7 +602,7 @@ export default function Page() {
                       : "bg-white text-[#003466]"
                   }`}
                 >
-                  Pickup from Boutique
+                  Delivery to Boutique
                 </button>
               </div>
 
