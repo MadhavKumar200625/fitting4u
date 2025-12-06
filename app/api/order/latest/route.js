@@ -20,7 +20,7 @@ export async function GET(req) {
 
     const token = authHeader.replace("Bearer ", "");
     const decoded = jwt.decode(token);
-
+    console.log("TOKEN RAW:", JSON.stringify(token));
     if (!decoded?.phone) {
       return NextResponse.json(
         { success: false, message: "Invalid token" },
