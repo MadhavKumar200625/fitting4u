@@ -21,7 +21,7 @@
     "keen-slider": "^6.8.6",
     "lucide-react": "^0.545.0",
     "mongoose": "^8.19.2",
-    "next": "latest",
+    "next": "15.5",
     "razorpay": "^2.9.6",
     "react": "19.1.0",
     "react-dom": "19.1.0",
