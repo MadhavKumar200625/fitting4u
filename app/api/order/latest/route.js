@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import dbConnect from "@/lib/dbConnect";
 import Order from "@/models/Order";
 import Boutique from "@/models/boutiqueSchema";
+import "@/models/Fabric";
 
 export async function GET(req) {
   try {
