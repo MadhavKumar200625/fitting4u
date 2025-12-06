@@ -65,7 +65,6 @@ export async function GET(req) {
         fabricId: fabric._id || item.fabricId,
       };
     });
-    console.log(order.items)
     return NextResponse.json({
       success: true,
       order,

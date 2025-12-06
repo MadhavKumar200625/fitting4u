@@ -1,11 +1,9 @@
+import jwt from "jsonwebtoken";
 import { NextResponse } from "next/server";
 import User from "@/models/User";
 import Boutique from "@/models/boutiqueSchema";
 import dbConnect from "@/lib/dbConnect";
 
-await dbConnect();
-
-/* ------------------------- CREATE USER ------------------------- */
 export async function POST(req) {
   await dbConnect();
 
@@ -19,47 +17,42 @@ export async function POST(req) {
       );
     }
 
-    // normalize: optional but recommended
     const normalizedPhone = phone.trim();
+    const deviceValue = deviceInfo?.trim() || "website";
 
-    /* --------------------------------------------------------
-       1) FIND USER
-    -------------------------------------------------------- */
+    // Find or create user
     let user = await User.findOne({ phone: normalizedPhone });
 
-    const deviceValue = deviceInfo?.trim() || "website"; // default
-
-
-    /* --------------------------------------------------------
-       2) CREATE OR UPDATE USER
-    -------------------------------------------------------- */
     if (!user) {
-      // new user
       user = await User.create({
         phone: normalizedPhone,
         lastLogin: new Date(),
         deviceInfo: deviceValue,
       });
     } else {
-      // existing user → update last login & deviceInfo
       user.lastLogin = new Date();
       user.deviceInfo = deviceValue;
       await user.save();
     }
 
-    /* --------------------------------------------------------
-       3) CHECK BOUTIQUE OWNER
-    -------------------------------------------------------- */
+    // Check if boutique owner
     const boutique = await Boutique.findOne({ phoneNumber: normalizedPhone });
     const isBoutique = !!boutique;
 
-    /* --------------------------------------------------------
-       4) UNIFIED RESPONSE for Android
-    -------------------------------------------------------- */
+    // 🔥 Generate JWT
+    const secret = process.env.JWT_SECRET || "dev-temp-secret";
+
+    const token = jwt.sign(
+      { phone: normalizedPhone },
+      secret,
+      { expiresIn: "180d" } // recommended expiry for mobile apps
+    );
+
     return NextResponse.json({
       success: true,
       isBoutique,
       phoneNumber: user.phone,
+      token,                // 🔥 return JWT here
     });
 
   } catch (error) {

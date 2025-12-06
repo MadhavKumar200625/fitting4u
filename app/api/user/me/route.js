@@ -59,7 +59,6 @@ export async function GET(req) {
     ---------------------------------------------------- */
     const needsName = !enrichedUser.name;
 
-    console.log(enrichedUser.address)
 
 const needsAddress =
   !enrichedUser.address ||
@@ -67,7 +66,6 @@ const needsAddress =
     .filter(v => v !== "India")
     .some(Boolean);
 
-  console.log(needsAddress)
 
 if (needsName || needsAddress) {
   const lastHomeOrder = await Order.findOne({

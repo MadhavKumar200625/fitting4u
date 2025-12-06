@@ -27,7 +27,6 @@ export async function GET(req) {
         { status: 401 }
       );
     }
-      console.log(decoded.phone)
     // ✅ FETCH ORDERS
     const orders = await Order.find({
       userPhone: decoded.phone,

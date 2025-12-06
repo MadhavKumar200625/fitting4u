@@ -12,8 +12,9 @@ import {
   MessageCircle,
   AlertTriangle
 } from "lucide-react";
+import PageGuard from "./PageGaurd";
 
-export default function HomeMeasurementPage() {
+export default function Page() {
   // 👉 CHANGE THIS NUMBER
   const WA_NUMBER = "919999999999"; // replace with real number
 
@@ -43,6 +44,8 @@ export default function HomeMeasurementPage() {
   };
 
   return (
+        <PageGuard>
+
     <div className="relative min-h-screen pt-32 pb-24 overflow-hidden bg-gradient-to-br from-[#f6f9ff] to-white">
 
       {/* Ambient glow blobs */}
@@ -214,6 +217,7 @@ export default function HomeMeasurementPage() {
 
       </div>
     </div>
+    </PageGuard>
   );
 }
 
