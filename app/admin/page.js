@@ -5,9 +5,32 @@ import Link from "next/link";
 import jwt from "jsonwebtoken";
 import { motion } from "framer-motion";
 
-import { Store, Shirt, Ruler, Settings, Palette } from "lucide-react";
+import {
+  Store,
+  Shirt,
+  Ruler,
+  Settings,
+  Palette,
+  Package,      // ✅ Orders
+  Boxes         // ✅ Fabric Orders Home
+} from "lucide-react";
 
 const SECTIONS = [
+  // ---------------- ORDER PANELS ----------------
+  {
+    name: "Active Orders",
+    icon: Package,
+    link: "/admin/active-order-management",
+  },
+  
+  {
+    name: "Orders Overview",
+    icon: Boxes,
+    link: "/admin/orders",
+    
+  },
+
+  // ---------------- CORE BUSINESS ----------------
   {
     name: "Boutiques Management",
     icon: Store,
@@ -28,16 +51,25 @@ const SECTIONS = [
     icon: Palette,
     link: "/admin/design-management",
   },
+
+  // ---------------- SYSTEM ----------------
+  {
+    name: "Admins",
+    icon: Settings,
+    link: "/admin/admins",
+  },
   {
     name: "Settings",
     icon: Settings,
     link: "/admin/settings",
   },
   {
-    name: "Admins",
+    name: "Applciation Home Page Management",
     icon: Settings,
-    link: "/admin/admins",
+    link: "/admin/fabric-home",
+    
   },
+
 ];
 
 export default function AdminHome() {

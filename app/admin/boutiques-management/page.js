@@ -36,19 +36,63 @@ export default function BoutiquesManagement() {
     setBoutiques(boutiques.filter((b) => b._id !== id));
   };
 
+  const handleBulkUpload = async (file) => {
+  if (!file) return;
+
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const token =
+    sessionStorage.getItem("admin_auth") ||
+    localStorage.getItem("admin_auth");
+
+  const res = await fetch("/api/admin/boutiques/bulk-upload", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: formData,
+  });
+
+  const data = await res.json();
+
+  if (!data.success) {
+    alert(data.message || "Upload failed");
+    return;
+  }
+
+  alert(`✅ ${data.inserted} boutiques uploaded`);
+  fetchBoutiques();
+};
+
   return (
     <section className="min-h-screen bg-[#fff] pb-20 pt-32 px-6 md:px-10">
       <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900">Boutiques</h1>
-          <Link
-            href="/admin/boutiques-management/add"
-            className="flex items-center gap-2 bg-[var(--color-accent)] text-[var(--color-primary)] px-6 py-3 rounded-full font-medium shadow-md hover:shadow-lg transition-all"
-          >
-            <Plus size={20} />
-            Add Boutique
-          </Link>
-        </div>
+       <div className="flex flex-wrap gap-4 justify-between items-center mb-12">
+  <h1 className="text-4xl font-bold text-black">Boutiques</h1>
+
+  <div className="flex gap-3">
+    {/* BULK UPLOAD */}
+    <label className="cursor-pointer flex items-center gap-2 border border-black text-black px-6 py-3 rounded-full font-medium hover:bg-gray-100">
+      Upload CSV
+      <input
+        type="file"
+        accept=".csv"
+        hidden
+        onChange={(e) => handleBulkUpload(e.target.files[0])}
+      />
+    </label>
+
+    {/* ADD SINGLE */}
+    <Link
+      href="/admin/boutiques-management/add"
+      className="flex items-center gap-2 bg-[var(--color-accent)] text-[var(--color-primary)] px-6 py-3 rounded-full font-medium shadow-md hover:shadow-lg"
+    >
+      <Plus size={20} />
+      Add Boutique
+    </Link>
+  </div>
+</div>
 
         {/* Table */}
         <div className="overflow-x-auto bg-white rounded-3xl shadow-md border border-gray-100">

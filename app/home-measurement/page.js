@@ -16,7 +16,7 @@ import PageGuard from "./PageGaurd";
 
 export default function Page() {
   // 👉 CHANGE THIS NUMBER
-  const WA_NUMBER = "919999999999"; // replace with real number
+  const WA_NUMBER = "+919319685718"; // replace with real number
 
   const [name, setName] = useState("");
   const [message, setMessage] = useState("");
@@ -44,7 +44,6 @@ export default function Page() {
   };
 
   return (
-        <PageGuard>
 
     <div className="relative min-h-screen pt-32 pb-24 overflow-hidden bg-gradient-to-br from-[#f6f9ff] to-white">
 
@@ -119,7 +118,7 @@ export default function Page() {
 
               <textarea
                 rows={5}
-                placeholder="Describe your requirement (e.g. number of outfits, preferred date, city, etc.)"
+                placeholder="Describe your requirement (e.g. I want a shirt to be stiched.)"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 className="
@@ -217,7 +216,6 @@ export default function Page() {
 
       </div>
     </div>
-    </PageGuard>
   );
 }
 

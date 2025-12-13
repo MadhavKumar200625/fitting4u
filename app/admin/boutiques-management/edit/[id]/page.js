@@ -4,6 +4,23 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Plus, Trash2, X } from "lucide-react";
 
+const DAYS = [
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday",
+];
+
+const emptyBusinessHours = DAYS.map((day) => ({
+  day,
+  open: "",
+  close: "",
+  isClosed: false,
+}));
+
 export default function EditBoutique() {
   const router = useRouter();
   const params = useParams();
@@ -33,144 +50,134 @@ export default function EditBoutique() {
     type: "Unisex",
     status: "Active",
     faqs: [{ question: "", answer: "" }],
-    businessHours: [
-      { day: "Monday", open: "", close: "", isClosed: false },
-      { day: "Tuesday", open: "", close: "", isClosed: false },
-      { day: "Wednesday", open: "", close: "", isClosed: false },
-      { day: "Thursday", open: "", close: "", isClosed: false },
-      { day: "Friday", open: "", close: "", isClosed: false },
-      { day: "Saturday", open: "", close: "", isClosed: false },
-      { day: "Sunday", open: "", close: "", isClosed: false },
-    ],
+    businessHours: emptyBusinessHours,
   });
 
-  // ✅ Load existing boutique
+  /* ----------------------------------------
+     LOAD & NORMALIZE DATA
+  -----------------------------------------*/
   useEffect(() => {
     if (!id) return;
-    const fetchData = async () => {
+
+    (async () => {
       try {
         const res = await fetch(`/api/boutiques/${id}`, {
           headers: {
             Authorization: `Bearer ${process.env.NEXT_PUBLIC_ADMIN_SECRET}`,
           },
         });
+
         const data = await res.json();
-        if (res.ok) setFormData(data);
-        else console.error("Failed to load boutique:", data);
+        if (!res.ok) throw new Error("Fetch failed");
+
+        // ✅ Normalize business hours
+        const bhMap = {};
+        (data.businessHours || []).forEach((b) => {
+          bhMap[b.day] = b;
+        });
+
+        const normalizedBH = DAYS.map((day) => ({
+          day,
+          open: bhMap[day]?.open || "",
+          close: bhMap[day]?.close || "",
+          isClosed: bhMap[day]?.isClosed || false,
+        }));
+
+        setFormData({
+          ...data,
+          lat: data.lat?.toString() || "",
+          long: data.long?.toString() || "",
+          seo: {
+            ...data.seo,
+            keywords: Array.isArray(data.seo?.keywords)
+              ? data.seo.keywords.join(", ")
+              : "",
+          },
+          businessHours: normalizedBH,
+          faqs: data.faqs?.length ? data.faqs : [{ question: "", answer: "" }],
+        });
       } catch (err) {
         console.error(err);
       } finally {
         setLoading(false);
       }
-    };
-    fetchData();
+    })();
   }, [id]);
 
+  /* ----------------------------------------
+     GENERIC CHANGE HANDLER
+  -----------------------------------------*/
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
+
     if (type === "checkbox" && name === "verified") {
       setFormData((p) => ({ ...p, verified: checked }));
       return;
     }
 
     const [group, key] = name.split(".");
-    if (key) setFormData((p) => ({ ...p, [group]: { ...p[group], [key]: value } }));
-    else setFormData((p) => ({ ...p, [name]: value }));
-  };
-
-  // ✅ Upload handler
-  const handleImageUpload = async (e, field) => {
-    const files = Array.from(e.target.files);
-    if (!files.length) return;
-    if (!formData.websiteUrl) return alert("Enter Website Slug first");
-
-    setUploading(true);
-    try {
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        const ext = file.name.split(".").pop().toLowerCase();
-        if (!["png", "webp"].includes(ext)) continue;
-
-        let fileName = "";
-        if (field === "businessLogo")
-          fileName = `${formData.websiteUrl.trim().toLowerCase()}/logo.${ext}`;
-        else {
-          const nextIndex = formData.imageGallery.length + (i + 1);
-          fileName = `${formData.websiteUrl.trim().toLowerCase()}/image-gallery/${nextIndex}.${ext}`;
-        }
-
-        const res = await fetch(
-          `/api/upload?fileName=${encodeURIComponent(fileName)}&contentType=${encodeURIComponent(file.type)}`
-        );
-        const { uploadUrl, publicUrl } = await res.json();
-
-        const uploadRes = await fetch(uploadUrl, {
-          method: "PUT",
-          headers: { "Content-Type": file.type },
-          body: file,
-        });
-        if (!uploadRes.ok) throw new Error("S3 upload failed");
-
-        if (field === "businessLogo") {
-          setFormData((p) => ({
-            ...p,
-            businessLogo: `${publicUrl}?v=${Date.now()}`, // cache-buster
-          }));
-        } else {
-          setFormData((p) => ({
-            ...p,
-            imageGallery: [...p.imageGallery, publicUrl],
-          }));
-        }
-      }
-    } catch (err) {
-      console.error("Upload error:", err);
-    } finally {
-      setUploading(false);
+    if (key) {
+      setFormData((p) => ({
+        ...p,
+        [group]: { ...p[group], [key]: value },
+      }));
+    } else {
+      setFormData((p) => ({ ...p, [name]: value }));
     }
   };
 
-  const removeImage = async (index) => {
-    const imageUrl = formData.imageGallery[index];
-    const key = imageUrl.split(".com/")[1];
-    if (!key) return;
-    await fetch(`/api/upload?key=${encodeURIComponent(key)}`, { method: "DELETE" });
-    setFormData((p) => ({
-      ...p,
-      imageGallery: p.imageGallery.filter((_, i) => i !== index),
-    }));
-  };
-
-  const removeLogo = async () => {
-    if (!formData.businessLogo) return;
-    const key = formData.businessLogo.split(".com/")[1];
-    await fetch(`/api/upload?key=${encodeURIComponent(key)}`, { method: "DELETE" });
-    setFormData((p) => ({ ...p, businessLogo: "" }));
-  };
-
-  // ✅ Update form
+  /* ----------------------------------------
+     SUBMIT (FIXED PAYLOAD)
+  -----------------------------------------*/
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const payload = {
+      ...formData,
+      lat: Number(formData.lat),
+      long: Number(formData.long),
+      seo: {
+        ...formData.seo,
+        keywords: formData.seo.keywords
+          .split(",")
+          .map((k) => k.trim())
+          .filter(Boolean),
+      },
+      location: {
+        type: "Point",
+        coordinates: [
+          Number(formData.long),
+          Number(formData.lat),
+        ],
+      },
+    };
+
     const res = await fetch(`/api/boutiques/${id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${process.env.NEXT_PUBLIC_ADMIN_SECRET}`,
       },
-      body: JSON.stringify(formData),
+      body: JSON.stringify(payload),
     });
+
     if (res.ok) router.push("/admin/boutiques-management");
     else alert("Update failed");
   };
 
-  // FAQ controls
+  /* ----------------------------------------
+     FAQ HELPERS (UNCHANGED)
+  -----------------------------------------*/
   const addFAQ = () =>
-    setFormData((p) => ({ ...p, faqs: [...p.faqs, { question: "", answer: "" }] }));
+    setFormData((p) => ({
+      ...p,
+      faqs: [...p.faqs, { question: "", answer: "" }],
+    }));
 
   const updateFAQ = (i, key, val) => {
-    const updated = [...formData.faqs];
-    updated[i][key] = val;
-    setFormData((p) => ({ ...p, faqs: updated }));
+    const u = [...formData.faqs];
+    u[i][key] = val;
+    setFormData((p) => ({ ...p, faqs: u }));
   };
 
   const removeFAQ = (i) =>
@@ -386,31 +393,35 @@ export default function EditBoutique() {
             <h3 className="text-lg font-semibold mb-4">Business Hours</h3>
             <div className="space-y-3">
               {formData.businessHours.map((bh, i) => (
-                <div key={i} className="flex items-center gap-3">
+                <div key={bh.day} className="flex items-center gap-3">
                   <span className="w-24 font-medium">{bh.day}</span>
+
                   <input
                     type="time"
                     value={bh.open}
+                    disabled={bh.isClosed}
                     onChange={(e) => {
                       const u = [...formData.businessHours];
                       u[i].open = e.target.value;
                       setFormData((p) => ({ ...p, businessHours: u }));
                     }}
                     className="p-2 border rounded-lg"
-                    disabled={bh.isClosed}
                   />
+
                   <span>to</span>
+
                   <input
                     type="time"
                     value={bh.close}
+                    disabled={bh.isClosed}
                     onChange={(e) => {
                       const u = [...formData.businessHours];
                       u[i].close = e.target.value;
                       setFormData((p) => ({ ...p, businessHours: u }));
                     }}
                     className="p-2 border rounded-lg"
-                    disabled={bh.isClosed}
                   />
+
                   <label className="flex items-center gap-1 ml-2">
                     <input
                       type="checkbox"

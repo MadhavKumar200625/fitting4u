@@ -9,14 +9,12 @@ export const revalidate = 0;
    CITY CENTERS (same as before)
 ----------------------------------------------*/
 const CITY_CENTERS = {
-  Mumbai: { lat: 19.0760, lon: 72.8777, radiusKm: 25 },
   Delhi: { lat: 28.6139, lon: 77.2090, radiusKm: 30 },
+  Mumbai: { lat: 19.0760, lon: 72.8777, radiusKm: 25 },
   Bangalore: { lat: 12.9716, lon: 77.5946, radiusKm: 25 },
   Pune: { lat: 18.5204, lon: 73.8567, radiusKm: 20 },
   Chennai: { lat: 13.0827, lon: 80.2707, radiusKm: 20 },
   Hyderabad: { lat: 17.3850, lon: 78.4867, radiusKm: 25 },
-  Kolkata: { lat: 22.5726, lon: 88.3639, radiusKm: 25 },
-  Jaipur: { lat: 26.9124, lon: 75.7873, radiusKm: 20 },
 };
 
 /* ---------------------------------------------
@@ -56,6 +54,7 @@ export async function GET(req) {
     const page = Math.max(1, parseInt(pageRaw, 10));
     const limit = Math.max(1, Math.min(100, parseInt(limitRaw, 10)));
     const skip = (page - 1) * limit;
+    const subLocation = searchParams.get("subLocation") || "All";
 
     const filters = {};
 
@@ -86,24 +85,30 @@ export async function GET(req) {
 
     // location bounding box
     if (location !== "All") {
-      const cityInfo = CITY_CENTERS[location];
-      if (cityInfo) {
-        const { minLat, maxLat, minLon, maxLon } = bboxFor(
-          cityInfo.lat,
-          cityInfo.lon,
-          cityInfo.radiusKm
-        );
-        filters.lat = { $gte: minLat, $lte: maxLat };
-        filters.long = { $gte: minLon, $lte: maxLon };
-      } else {
-        // fallback: substring match
-        const regex = new RegExp(
-          location.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
-          "i"
-        );
-        filters.googleAddress = regex;
-      }
-    }
+  const cityInfo = CITY_CENTERS[location];
+
+  if (cityInfo) {
+    const { minLat, maxLat, minLon, maxLon } = bboxFor(
+      cityInfo.lat,
+      cityInfo.lon,
+      cityInfo.radiusKm
+    );
+
+    filters.lat = { $gte: minLat, $lte: maxLat };
+    filters.long = { $gte: minLon, $lte: maxLon };
+  }
+}
+
+// ===== Sub-location matching =====
+if (subLocation !== "All") {
+  const regex = new RegExp(
+    subLocation.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
+    "i"
+  );
+
+  filters.googleAddress = regex;
+}
+    
 
     // projection same as before
     const projection = {

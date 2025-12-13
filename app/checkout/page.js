@@ -602,7 +602,7 @@ export default function Page() {
                       : "bg-white text-[#003466]"
                   }`}
                 >
-                  Delivery to Boutique
+                  Deliver to Boutique
                 </button>
               </div>
 
@@ -629,7 +629,7 @@ export default function Page() {
                         }
                         fetchBoutiquesFromPincode(pin);
                       }}
-                      className="px-5 py-3 rounded-lg bg-[#003466] text-white font-medium hover:bg-[#002850]"
+                      className="px-5 py-3 rounded-lg bg-white border-[#003466] border-1 text-[#003466] font-medium  hover:text-white hover:bg-[#002850]"
                     >
                       Find
                     </button>

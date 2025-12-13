@@ -11,6 +11,7 @@ export default function BoutiqueSearchPage() {
     priceRange: "All",
     verified: "All",
     location: "All",
+    subLocation: "All",
   });
   const [boutiques, setBoutiques] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -18,17 +19,15 @@ export default function BoutiqueSearchPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
 
-  const locations = [
-    "All",
-    "Delhi",
-    "Mumbai",
-    "Bangalore",
-    "Pune",
-    "Chennai",
-    "Hyderabad",
-    "Kolkata",
-    "Jaipur",
-  ];
+  const LOCATIONS = {
+  All: [],
+  Delhi: ["South Delhi", "North Delhi", "East Delhi", "West Delhi","cp"],
+  Mumbai: ["Bandra", "Andheri", "Juhu"],
+  Bangalore: ["Whitefield", "Indiranagar", "Koramangala"],
+  Pune: ["Viman Nagar", "Koregaon Park", "Wakad"],
+  Chennai: ["T. Nagar", "Adyar"],
+  Hyderabad: ["Banjara Hills", "Gachibowli"],
+};
 
   const fetchBoutiques = async (overridePage = 1) => {
     setLoading(true);
@@ -39,6 +38,7 @@ export default function BoutiqueSearchPage() {
       verified: filters.verified,
       location: filters.location,
       page: overridePage,
+      subLocation: filters.subLocation,
       limit: 20,
     });
 
@@ -148,11 +148,30 @@ export default function BoutiqueSearchPage() {
                 onChange={handleFilterChange}
                 className="w-full px-4 py-2 bg-[#f9f9fb] border border-gray-200 rounded-xl focus:ring-1 focus:ring-[#ffc1cc] transition cursor-pointer hover:border-[#003466]/30"
               >
-                {locations.map((loc) => (
+                {Object.keys(LOCATIONS).map((loc) => (
                   <option key={loc}>{loc}</option>
                 ))}
               </select>
             </div>
+
+            <div>
+  <label className="text-sm font-medium text-gray-500 mb-2 block">
+    Sub Location
+  </label>
+
+  <select
+    name="subLocation"
+    value={filters.subLocation}
+    onChange={handleFilterChange}
+    className="w-full px-4 py-2 bg-[#f9f9fb] border border-gray-200 rounded-xl focus:ring-1 focus:ring-[#ffc1cc] cursor-pointer hover:border-[#003466]/30"
+  >
+    <option value="All">All</option>
+
+    {LOCATIONS[filters.location]?.map((sub) => (
+      <option key={sub}>{sub}</option>
+    ))}
+  </select>
+</div>
 
             <button
               onClick={() => fetchBoutiques(1)}
