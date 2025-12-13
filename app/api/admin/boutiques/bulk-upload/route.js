@@ -39,7 +39,7 @@ export async function POST(req) {
     await dbConnect();
 
     /* ---------- AUTH ---------- */
-    const admin = await requireAdmin(req, ["SUPER_ADMIN"]);
+    const admin = await requireAdmin(req, ["SUPER_ADMIN","SUB_ADMIN"]);
     if (!admin)
       return NextResponse.json(
         { success: false, message: "Unauthorized" },
