@@ -130,23 +130,42 @@ export default function EditBoutique() {
     }
   };
 
+  const extractKey = (url) => {
+  if (!url) return null;
+
+  const clean = url.split("?")[0]; // remove cache buster
+  const marker = "/uploads/";
+  const idx = clean.indexOf(marker);
+
+  if (idx === -1) return null;
+
+  return clean.slice(idx + marker.length);
+};
+
   const removeImage = async (index) => {
-    const imageUrl = formData.imageGallery[index];
-    const key = imageUrl.split(".com/")[1];
-    if (!key) return;
-    await fetch(`/api/upload?key=${encodeURIComponent(key)}`, { method: "DELETE" });
-    setFormData((p) => ({
-      ...p,
-      imageGallery: p.imageGallery.filter((_, i) => i !== index),
-    }));
-  };
+  const key = extractKey(formData.imageGallery[index]);
+  if (!key) return;
+
+  await fetch(`/api/upload?key=${encodeURIComponent(key)}`, {
+    method: "DELETE",
+  });
+
+  setFormData((p) => ({
+    ...p,
+    imageGallery: p.imageGallery.filter((_, i) => i !== index),
+  }));
+};
 
   const removeLogo = async () => {
-    if (!formData.businessLogo) return;
-    const key = formData.businessLogo.split(".com/")[1];
-    await fetch(`/api/upload?key=${encodeURIComponent(key)}`, { method: "DELETE" });
-    setFormData((p) => ({ ...p, businessLogo: "" }));
-  };
+  const key = extractKey(formData.businessLogo);
+  if (!key) return;
+
+  await fetch(`/api/upload?key=${encodeURIComponent(key)}`, {
+    method: "DELETE",
+  });
+
+  setFormData((p) => ({ ...p, businessLogo: "" }));
+};
 
   // ✅ Update form
   const handleSubmit = async (e) => {
