@@ -72,15 +72,15 @@ export async function POST(req) {
       tagline: r.tagline || "",
 
       seo: {
-        metaTitle: r["seo.metaTitle"] || "",
-        metaDescription: r["seo.metaDescription"] || "",
-        keywords: r["seo.keywords"]
-          ? r["seo.keywords"]
-              .split(",")
-              .map((k) => k.trim())
-              .filter(Boolean)
-          : [],
-      },
+  metaTitle: r.seo?.metaTitle || "",
+  metaDescription: r.seo?.metaDescription || "",
+  keywords: r.seo?.keywords
+    ? r.seo.keywords
+        .split(",")
+        .map((k) => k.trim())
+        .filter(Boolean)
+    : [],
+},
 
       googleAddress: r.googleAddress || "",
       lat: Number(r.lat),
