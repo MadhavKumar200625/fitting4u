@@ -53,7 +53,6 @@ export default function EditFabric() {
     setForm({ ...form, faqs });
   };
 
-  // ✅ Upload Image to S3 (structured by slug)
   const handleImageUpload = async (e) => {
     const files = Array.from(e.target.files);
     if (!files.length) return;
@@ -76,7 +75,7 @@ export default function EditFabric() {
           `/api/upload?fileName=${encodeURIComponent(fileName)}&contentType=${file.type}`
         );
 
-        if (!res.ok) throw new Error("Failed to get S3 URL");
+        if (!res.ok) throw new Error("Failed to get  URL");
 
         const { uploadUrl, publicUrl } = await res.json();
 
@@ -103,9 +102,8 @@ export default function EditFabric() {
     setUploading(false);
   };
 
-  // ✅ Delete image from S3 and UI
   const handleImageDelete = async (imageUrl, index) => {
-    if (!confirm("Delete this image from S3 and remove it?")) return;
+    if (!confirm("Delete this image from and remove it?")) return;
 
     try {
       const url = new URL(imageUrl);
@@ -115,7 +113,7 @@ export default function EditFabric() {
         method: "DELETE",
       });
 
-      if (!res.ok) throw new Error("S3 deletion failed");
+      if (!res.ok) throw new Error(" deletion failed");
 
       setForm((prev) => ({
         ...prev,

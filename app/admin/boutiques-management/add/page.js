@@ -51,7 +51,6 @@ export default function AddBoutique() {
     }
   };
 
-  // ✅ Upload logic with overwrite-safe S3 naming
   const handleImageUpload = async (e, field) => {
     const files = Array.from(e.target.files);
     if (!files.length) return;
@@ -99,7 +98,7 @@ export default function AddBoutique() {
           body: file,
         });
 
-        if (!uploadRes.ok) throw new Error("S3 upload failed");
+        if (!uploadRes.ok) throw new Error("upload failed");
 
         if (field === "businessLogo") {
           setFormData((prev) => ({ ...prev, businessLogo: publicUrl }));
@@ -118,7 +117,6 @@ export default function AddBoutique() {
     }
   };
 
-  // ✅ Delete from S3 & UI
   const removeImage = async (index) => {
     const imageUrl = formData.imageGallery[index];
     const key = imageUrl.split(".com/")[1]; // everything after bucket/

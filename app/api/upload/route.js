@@ -1,64 +1,103 @@
-import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import fs from "fs";
+import path from "path";
+import { NextResponse } from "next/server";
 
-const s3 = new S3Client({
-  region: process.env.AWS_REGION,
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  },
-});
+const UPLOAD_ROOT = path.join(process.cwd(), "public", "uploads");
 
-// ----------------------
-// 📤 GENERATE UPLOAD URL
-// ----------------------
+/* --------------------------------
+   📤 GENERATE UPLOAD URL (LOCAL)
+---------------------------------*/
 export async function GET(req) {
   try {
     const { searchParams } = new URL(req.url);
     const fileName = searchParams.get("fileName");
-    const contentType = searchParams.get("contentType") || "image/jpeg";
 
     if (!fileName) {
-      return Response.json({ error: "fileName is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "fileName is required" },
+        { status: 400 }
+      );
     }
 
-    const command = new PutObjectCommand({
-      Bucket: process.env.AWS_S3_BUCKET,
-      Key: fileName,
-      ContentType: contentType,
-    });
+    // this URL will be used for PUT
+    const uploadUrl = `/api/upload?fileName=${encodeURIComponent(fileName)}`;
 
-    const uploadUrl = await getSignedUrl(s3, command, { expiresIn: 120 });
-    const publicUrl = `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
+    // public URL
+    const publicUrl = `/uploads/${fileName}`;
 
-    return Response.json({ uploadUrl, publicUrl });
+    return NextResponse.json({ uploadUrl, publicUrl });
   } catch (err) {
-    console.error("S3 URL generation failed:", err);
-    return Response.json({ error: "S3 URL generation failed" }, { status: 500 });
+    console.error("UPLOAD URL ERROR:", err);
+    return NextResponse.json(
+      { error: "Upload URL generation failed" },
+      { status: 500 }
+    );
   }
 }
 
-// ----------------------
-// ❌ DELETE FILE FROM S3
-// ----------------------
+/* --------------------------------
+   📥 WRITE FILE TO DISK
+---------------------------------*/
+export async function PUT(req) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const fileName = searchParams.get("fileName");
+
+    if (!fileName) {
+      return NextResponse.json(
+        { error: "fileName is required" },
+        { status: 400 }
+      );
+    }
+
+    const buffer = Buffer.from(await req.arrayBuffer());
+
+    const filePath = path.join(UPLOAD_ROOT, fileName);
+    const dir = path.dirname(filePath);
+
+    // ensure directory exists
+    fs.mkdirSync(dir, { recursive: true });
+
+    // write file
+    fs.writeFileSync(filePath, buffer);
+
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    console.error("FILE WRITE ERROR:", err);
+    return NextResponse.json(
+      { error: "File upload failed" },
+      { status: 500 }
+    );
+  }
+}
+
+/* --------------------------------
+   ❌ DELETE FILE
+---------------------------------*/
 export async function DELETE(req) {
   try {
     const { searchParams } = new URL(req.url);
-    const fileKey = searchParams.get("key");
+    const key = searchParams.get("key");
 
-    if (!fileKey) {
-      return Response.json({ error: "Missing 'key' query param" }, { status: 400 });
+    if (!key) {
+      return NextResponse.json(
+        { error: "Missing 'key'" },
+        { status: 400 }
+      );
     }
 
-    const command = new DeleteObjectCommand({
-      Bucket: process.env.AWS_S3_BUCKET,
-      Key: fileKey,
-    });
+    const filePath = path.join(UPLOAD_ROOT, key);
 
-    await s3.send(command);
-    return Response.json({ success: true, message: "File deleted successfully" });
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+
+    return NextResponse.json({ success: true });
   } catch (err) {
-    console.error("S3 delete failed:", err);
-    return Response.json({ error: "S3 delete failed" }, { status: 500 });
+    console.error("DELETE ERROR:", err);
+    return NextResponse.json(
+      { error: "File delete failed" },
+      { status: 500 }
+    );
   }
 }

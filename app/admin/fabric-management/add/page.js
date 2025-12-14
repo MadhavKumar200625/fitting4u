@@ -62,7 +62,6 @@ export default function AddFabric() {
   const handleImageDelete = async (imageUrl, index) => {
   try {
     const url = new URL(imageUrl);
-    // Extract file key relative to the S3 bucket root
     // Example: fabrics/slug/1.png
     const fileKey = decodeURIComponent(url.pathname.replace(/^\/+/, ""));
 
@@ -70,7 +69,7 @@ export default function AddFabric() {
       method: "DELETE",
     });
 
-    if (!res.ok) throw new Error("Failed to delete image from S3");
+    if (!res.ok) throw new Error("Failed to delete image");
 
     // Update local state (remove image from form)
     setForm((prev) => ({
@@ -85,12 +84,7 @@ export default function AddFabric() {
   }
 };
 
-  // ---------------------------
-  // 🧠 Handle S3 Image Upload
-  // ---------------------------
-  // ---------------------------
-// 🧠 Handle S3 Image Upload (Organized by Slug)
-// ---------------------------
+
 const handleImageUpload = async (e) => {
   const files = Array.from(e.target.files);
   if (!files.length) return;
@@ -113,7 +107,7 @@ const handleImageUpload = async (e) => {
         `/api/upload?fileName=${encodeURIComponent(fileName)}&contentType=${file.type}`
       );
 
-      if (!res.ok) throw new Error("Failed to get S3 URL");
+      if (!res.ok) throw new Error("Failed to get URL");
 
       const { uploadUrl, publicUrl } = await res.json();
 
