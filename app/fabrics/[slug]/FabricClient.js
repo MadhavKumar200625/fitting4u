@@ -15,6 +15,8 @@ import React, { useState, Suspense } from "react";
 import "keen-slider/keen-slider.min.css";
 import { useKeenSlider } from "keen-slider/react";
 import { Toaster, toast } from "react-hot-toast";
+import QuickHighlights from "./QuickHighlights";
+import FabricSpecs from "./FabricSpecs";
 
 // ✅ Skeleton Loader
 function FabricSkeleton() {
@@ -67,7 +69,7 @@ export default function FabricClient({ fabric }) {
         }}
       />
       <Suspense fallback={<FabricSkeleton />}>
-        <section className="min-h-screen bg-gradient-to-b from-white via-[#f9fafc] to-[#eef2f6] text-black pt-36 sm:pt-32 pb-32 px-4 sm:px-6 md:px-10 font-[Poppins]">
+        <section className="min-h-screen bg-gradient-to-b from-white via-[#f9fafc] to-[#eef2f6] text-black pt-36 sm:pt-32 pb-1 px-4 sm:px-6 md:px-10 font-[Poppins]">
           <div className="max-w-7xl mx-auto">
             {/* === HEADER === */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 mb-24 items-start">
@@ -101,6 +103,7 @@ export default function FabricClient({ fabric }) {
                   avgStars={fabric.avgStars}
                   reviews={fabric.reviews}
                 />
+                <FabricSpecs fabric={fabric} />
 
                 <div className="mb-10 bg-white shadow-lg rounded-2xl p-6 border border-neutral-100 relative overflow-hidden">
                   {/* Discount Badge */}
@@ -153,8 +156,10 @@ export default function FabricClient({ fabric }) {
 
                 <QtyCartSection fabric={fabric} setCartQty={setCartQty} cartQty={cartQty} />
 
+
+<QuickHighlights />
                 {/* Specifications */}
-                <div className="mt-12 bg-white border border-neutral-100 rounded-3xl shadow-sm p-6 space-y-2">
+                {/* <div className="mt-12 bg-white border border-neutral-100 rounded-3xl shadow-sm p-6 space-y-2">
                   <p>
                     <strong>Width:</strong> {fabric.width} inches
                   </p>
@@ -167,7 +172,7 @@ export default function FabricClient({ fabric }) {
                   <p>
                     <strong>Color:</strong> {fabric.color}
                   </p>
-                </div>
+                </div> */}
 
                 <div className="block sm:hidden">
                   <Section title="Description">

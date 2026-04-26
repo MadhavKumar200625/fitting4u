@@ -36,6 +36,7 @@ export default function Page() {
       async (position) => {
         try {
           const { latitude, longitude } = position.coords;
+          console.log(latitude,longitude)
 
           const res = await fetch(
             `/api/boutiques/nearby?lat=${latitude}&long=${longitude}`

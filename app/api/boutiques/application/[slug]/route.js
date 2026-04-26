@@ -1,4 +1,4 @@
-// /app/api/boutiques/[slug]/route.js  
+// /app/api/boutiques/[slug]/route.js
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/dbConnect";
 import Boutique from "@/models/boutiqueSchema";
@@ -6,18 +6,11 @@ import Boutique from "@/models/boutiqueSchema";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-/* ============================================================
-   GET /api/boutiques/[slug]
-   Returns:
-   - Full boutique
-   - nearMe[]  (closest 5 boutiques)
-   - related[] (same type, within 50km, sorted by rating)
-=============================================================== */
 export async function GET(req, { params }) {
   try {
     await dbConnect();
 
-    const { slug } = params;
+    const { slug } = await params;
     if (!slug) {
       return NextResponse.json(
         { success: false, message: "Slug is required" },
@@ -37,27 +30,33 @@ export async function GET(req, { params }) {
       );
     }
 
-    const { lat, long, type } = boutique;
+    const lat = Number(boutique.lat) || 0;
+    const long = Number(boutique.long) || 0;
+    const { type } = boutique;
 
-    if (!lat || !long) {
+
+
+    if (lat == null || long == null) {
       return NextResponse.json(
         { success: false, message: "Boutique has no coordinates" },
-        { status: 500 }
+        { status: 400 }
       );
     }
 
     /* ---------------------------------------------
-       2) NEAR ME → nearest 5 boutiques (fast!)
-          Mongo auto-calculates distance
+       2) NEAR ME
     ----------------------------------------------*/
     const nearMe = await Boutique.aggregate([
       {
         $geoNear: {
-          near: { type: "Point", coordinates: [long, lat] },
+          near: {
+            type: "Point",
+            coordinates: [long, lat],
+          },
           distanceField: "distanceMeters",
           spherical: true,
           query: { websiteUrl: { $ne: slug } },
-        }
+        },
       },
       { $sort: { distanceMeters: 1 } },
       { $limit: 5 },
@@ -71,34 +70,31 @@ export async function GET(req, { params }) {
           verified: 1,
           type: 1,
           websiteUrl: 1,
-          distanceKm: { $divide: ["$distanceMeters", 1000] }
-        }
-      }
+          distanceKm: { $divide: ["$distanceMeters", 1000] },
+        },
+      },
     ]);
 
     /* ---------------------------------------------
-       3) RELATED → same type + within 50km
-          sorted by rating (fallback updatedAt)
+       3) RELATED
     ----------------------------------------------*/
     const related = await Boutique.aggregate([
       {
         $geoNear: {
-          near: { type: "Point", coordinates: [long, lat] },
+          near: {
+            type: "Point",
+            coordinates: [long, lat],
+          },
           distanceField: "distanceMeters",
           spherical: true,
-          maxDistance: 50 * 1000, // 50 km
+          maxDistance: 50 * 1000,
           query: {
             type,
-            websiteUrl: { $ne: slug }
+            websiteUrl: { $ne: slug },
           },
-        }
+        },
       },
-      {
-        $sort: {
-          rating: -1,
-          updatedAt: -1
-        }
-      },
+      { $sort: { rating: -1, updatedAt: -1 } },
       { $limit: 5 },
       {
         $project: {
@@ -110,9 +106,9 @@ export async function GET(req, { params }) {
           verified: 1,
           type: 1,
           websiteUrl: 1,
-          distanceKm: { $divide: ["$distanceMeters", 1000] }
-        }
-      }
+          distanceKm: { $divide: ["$distanceMeters", 1000] },
+        },
+      },
     ]);
 
     return NextResponse.json({
@@ -129,4 +125,3 @@ export async function GET(req, { params }) {
     );
   }
 }
-

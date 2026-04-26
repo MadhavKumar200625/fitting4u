@@ -2,6 +2,18 @@ import dbConnect from "@/lib/dbConnect";
 import Fabric from "@/models/Fabric";
 import FabricClient from "./FabricClient";
 import { notFound } from "next/navigation";
+import SimilarFabrics from "./SimilarFabrics";
+import FeaturesSection from "./FeaturesSection";
+
+function generateFabricDescription(fabric) {
+  return `
+The ${fabric.name} from our ${fabric.collectionName} is crafted using ${fabric.material}, offering a refined ${fabric.weave.toLowerCase()} weave that ensures both durability and elegance. Designed in a ${fabric.color.toLowerCase()} tone, this fabric brings a sophisticated and versatile appeal suitable for modern and traditional outfits alike.
+
+With a width of ${fabric.width} inches, it provides ample flexibility for tailoring garments such as dresses, kurtas, sarees, and custom ensembles. The texture is smooth and comfortable against the skin, making it ideal for extended wear across seasons.
+
+Whether you're designing everyday wear or occasion outfits, this fabric delivers a balanced combination of style, comfort, and premium craftsmanship — making it a reliable choice for both designers and individuals.
+  `.trim();
+}
 
 export async function generateMetadata({ params }) {
   await dbConnect();
@@ -31,6 +43,30 @@ export async function generateMetadata({ params }) {
 export default async function FabricPage({ params }) {
   await dbConnect();
   let fabric = await Fabric.findOne({ slug: params.slug }).lean();
+
+  // Fetch similar fabrics
+let similarFabrics = [];
+if (fabric && (!fabric.description || fabric.description.trim() === "")) {
+  fabric.description = generateFabricDescription(fabric);
+}
+try {
+  const baseUrl =
+  process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+
+
+
+const res = await fetch(
+  `${baseUrl}/api/fabrics/similar/${fabric._id}`,
+  { cache: "no-store" }
+);
+
+  const data = await res.json();
+  if (data.success) {
+    similarFabrics = data.data;
+  }
+} catch (err) {
+  console.log("Similar fetch error", err);
+}
 
   // 🧪 Fallback sample data if DB is empty
   if (!fabric) {
@@ -138,5 +174,11 @@ export default async function FabricPage({ params }) {
     };
   }
 
-  return <FabricClient fabric={JSON.parse(JSON.stringify(fabric))} />;
+  return <>
+    <FabricClient fabric={JSON.parse(JSON.stringify(fabric))} />
+
+    <SimilarFabrics fabrics={similarFabrics} />
+    <FeaturesSection></FeaturesSection>
+    </>
+  
 }

@@ -148,12 +148,12 @@ export async function POST(req) {
         deliveryType === "BOUTIQUE" ? pickupBoutiqueId : null,
 
       payment: {
-        provider: "razorpay",
-        orderId: payment?.orderId,
-        paymentId: payment?.paymentId,
-        signature: payment?.signature,
-        status: payment?.status || "PENDING",
-      },
+  provider: "razorpay",
+  orderId: payment?.orderId,
+  paymentId: payment?.paymentId,
+  signature: payment?.signature,
+  status: payment?.status || "PENDING",
+},
 
       status: "CREATED",
     });
