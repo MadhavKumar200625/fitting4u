@@ -51,7 +51,7 @@ if (fabric && (!fabric.description || fabric.description.trim() === "")) {
 }
 try {
   const baseUrl =
-  process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+  process.env.NEXT_PUBLIC_BASE_URL || "http://fitting4u.vercel.app";
 
 
 
