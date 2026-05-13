@@ -1,5 +1,8 @@
 "use client";
-
+import {
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { useState, useMemo } from "react";
 import * as Slider from "@radix-ui/react-slider";
 import { motion, AnimatePresence } from "framer-motion";
@@ -507,41 +510,241 @@ function RadioGroup({ title, name, options }) {
 }
 /* ---------------- PAGINATION ---------------- */
 function Pagination({ current, total, searchParams }) {
-  const pages = Array.from({ length: total }, (_, i) => i + 1);
 
-  // Remove "page" from query params
+  const maxVisible = 5;
+
+  let startPage = Math.max(
+
+    current - Math.floor(maxVisible / 2),
+
+    1
+
+  );
+
+  let endPage = startPage + maxVisible - 1;
+
+  if (endPage > total) {
+
+    endPage = total;
+
+    startPage = Math.max(endPage - maxVisible + 1, 1);
+
+  }
+
+  const pages = [];
+
+  for (let i = startPage; i <= endPage; i++) {
+
+    pages.push(i);
+
+  }
+
+  // Remove current page from query params
+
   const baseQuery = new URLSearchParams(
+
     Object.fromEntries(
-      Object.entries(searchParams || {}).filter(([key]) => key !== "page")
+
+      Object.entries(searchParams || {}).filter(
+
+        ([key]) => key !== "page"
+
+      )
+
     )
-  ).toString();
+
+  );
+
+  const createPageLink = (page) => {
+
+    const params = new URLSearchParams(baseQuery);
+
+    params.set("page", page);
+
+    return `?${params.toString()}`;
+
+  };
 
   return (
-    <div className="flex justify-center mt-16 px-4">
-      {/* WRAPPER THAT FIXES RESPONSIVENESS */}
-      <div
-        className="
-          flex flex-wrap justify-center gap-2
-          max-w-full
-        "
-      >
+
+    <div className="flex justify-center items-center mt-16 px-4">
+
+      <div className="flex items-center gap-2 flex-wrap justify-center">
+
+        {/* PREV BUTTON */}
+
+        <Link
+
+          href={createPageLink(
+
+            current > 1 ? current - 1 : 1
+
+          )}
+
+          className={`
+
+            flex items-center justify-center
+
+            w-10 h-10 rounded-full border transition-all duration-300
+
+            ${
+
+              current === 1
+
+                ? "pointer-events-none opacity-40 bg-neutral-100 border-neutral-200"
+
+                : "bg-white hover:bg-[#003466] hover:text-white border-neutral-300 shadow-sm hover:shadow-md"
+
+            }
+
+          `}
+
+        >
+
+          <ChevronLeft size={18} />
+
+        </Link>
+
+        {/* FIRST PAGE */}
+
+        {startPage > 1 && (
+
+          <>
+
+            <Link
+
+              href={createPageLink(1)}
+
+              className="w-10 h-10 flex items-center justify-center rounded-full border bg-white border-neutral-300 hover:bg-neutral-100 transition"
+
+            >
+
+              1
+
+            </Link>
+
+            {startPage > 2 && (
+
+              <span className="px-1 text-gray-400">
+
+                ...
+
+              </span>
+
+            )}
+
+          </>
+
+        )}
+
+        {/* PAGE NUMBERS */}
+
         {pages.map((p) => (
+
           <Link
+
             key={p}
-            href={`?${baseQuery}&page=${p}`}
+
+            href={createPageLink(p)}
+
             className={`
-              px-4 py-2 rounded-full text-sm font-medium border transition-all
+
+              w-10 h-10 flex items-center justify-center
+
+              rounded-full text-sm font-medium
+
+              transition-all duration-300 border
+
               ${
+
                 p === current
-                  ? "bg-[#003466] text-white border-[#003466]"
-                  : "bg-white border-neutral-300 text-gray-700 hover:bg-neutral-100"
+
+                  ? "bg-[#003466] text-white border-[#003466] shadow-lg scale-105"
+
+                  : "bg-white text-gray-700 border-neutral-300 hover:bg-[#003466] hover:text-white hover:border-[#003466]"
+
               }
+
             `}
+
           >
+
             {p}
+
           </Link>
+
         ))}
+
+        {/* LAST PAGE */}
+
+        {endPage < total && (
+
+          <>
+
+            {endPage < total - 1 && (
+
+              <span className="px-1 text-gray-400">
+
+                ...
+
+              </span>
+
+            )}
+
+            <Link
+
+              href={createPageLink(total)}
+
+              className="w-10 h-10 flex items-center justify-center rounded-full border bg-white border-neutral-300 hover:bg-neutral-100 transition"
+
+            >
+
+              {total}
+
+            </Link>
+
+          </>
+
+        )}
+
+        {/* NEXT BUTTON */}
+
+        <Link
+
+          href={createPageLink(
+
+            current < total ? current + 1 : total
+
+          )}
+
+          className={`
+
+            flex items-center justify-center
+
+            w-10 h-10 rounded-full border transition-all duration-300
+
+            ${
+
+              current === total
+
+                ? "pointer-events-none opacity-40 bg-neutral-100 border-neutral-200"
+
+                : "bg-white hover:bg-[#003466] hover:text-white border-neutral-300 shadow-sm hover:shadow-md"
+
+            }
+
+          `}
+
+        >
+
+          <ChevronRight size={18} />
+
+        </Link>
+
       </div>
+
     </div>
+
   );
+
 }
