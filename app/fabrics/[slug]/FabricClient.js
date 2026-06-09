@@ -128,11 +128,11 @@ export default function FabricClient({ fabric }) {
                       <span className="text-neutral-400 text-xl line-through ml-2 font-normal">
                         ₹{fabric.price} / meter
                       </span>
-                      {isBoutiqueUser && (
+                      {/* {isBoutiqueUser && ( */}
   <p className="text-base text-neutral-700 mt-2">
     Boutique Price: ₹{fabric.boutiquePrice} / meter
   </p>
-)}
+{/* )} */}
                       <p className="text-black text-base mt-1 font-medium">
                         You save ₹
                         {(fabric.price - fabric.customerPrice).toFixed(2)}
@@ -394,7 +394,7 @@ function QtyCartSection({ fabric, setCartQty, cartQty }) {
   const handleQtyChange = (delta) =>
     setQty((p) => Math.max(0.25, parseFloat((p + delta).toFixed(2))));
 
-  const total = (fabric.customerPrice * qty).toFixed(2);
+  const total = (fabric.boutiquePrice * qty).toFixed(2);
 
   const updateCartState = (cart) => {
     localStorage.setItem("cart", JSON.stringify(cart));
