@@ -143,7 +143,7 @@ export default function FabricClient({ fabric }) {
                   </div>
 
                   {/* Stock Status */}
-                  {/* <p
+                  <p
                     className={`font-medium mt-4 ${
                       fabric.stockLeft > 0 ? "text-green-600" : "text-red-500"
                     }`}
@@ -151,7 +151,7 @@ export default function FabricClient({ fabric }) {
                     {fabric.stockLeft > 0
                       ? `${fabric.stockLeft} meters available`
                       : "Out of Stock"}
-                  </p> */}
+                  </p>
                 </div>
 
                 <QtyCartSection fabric={fabric} setCartQty={setCartQty} cartQty={cartQty} />
