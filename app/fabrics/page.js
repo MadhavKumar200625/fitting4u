@@ -19,11 +19,11 @@ export default async function FabricsPage({ searchParams }) {
     minStars,
     search = "",
     page = 1,
-    limit = 20,
+    limit = 21,
   } = await searchParams;
 
   // Build filters
-  const filter = { status: "Active" };
+  const filter = { status: "Active" ,stockLeft: { $gt: 1 },};
   if (collection) filter.collectionName = new RegExp(collection, "i");
   if (color) filter.color = new RegExp(color, "i");
   if (material) filter.material = new RegExp(material, "i");
