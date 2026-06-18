@@ -8,6 +8,7 @@ import * as Slider from "@radix-ui/react-slider";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 
+
 export default function FabricClient({
   fabrics,
   collections,

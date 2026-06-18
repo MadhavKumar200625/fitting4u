@@ -80,7 +80,7 @@ export default function PhoneVerificationPopup({ isOpen, onClose, onSuccess }) {
 
       if (result.user) {
         const userPhone = result.user.phoneNumber;
-
+        
         const res = await fetch("/api/auth/generate-token", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
@@ -90,7 +90,7 @@ const data = await res.json();
 localStorage.setItem("authToken", data.token);
 
         // ✅ Create or update user in DB
-        await fetch("/api/user", {
+        const userRes = await fetch("/api/user", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -99,6 +99,9 @@ localStorage.setItem("authToken", data.token);
           }),
         });
 
+        const userData = await userRes.json();
+
+localStorage.setItem("authToken", userData.token);
         toast.success("Verified successfully!");
         onSuccess && onSuccess();
         onClose();

@@ -43,7 +43,7 @@ export async function POST(req) {
     const secret = process.env.JWT_SECRET || "dev-temp-secret";
 
     const token = jwt.sign(
-      { phone: normalizedPhone },
+      { phone: normalizedPhone , isBoutique  },
       secret,
       { expiresIn: "180d" } // recommended expiry for mobile apps
     );

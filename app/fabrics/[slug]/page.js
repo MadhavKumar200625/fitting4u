@@ -17,6 +17,7 @@ Whether you're designing everyday wear or occasion outfits, this fabric delivers
 
 export async function generateMetadata({ params }) {
   await dbConnect();
+  params = await params;
   const fabric = await Fabric.findOne({ slug: params.slug }).lean();
 
   if (!fabric)
@@ -42,6 +43,7 @@ export async function generateMetadata({ params }) {
 // ✅ Server Component (SSR)
 export default async function FabricPage({ params }) {
   await dbConnect();
+  params = await params;
   let fabric = await Fabric.findOne({ slug: params.slug }).lean();
 
   // Fetch similar fabrics

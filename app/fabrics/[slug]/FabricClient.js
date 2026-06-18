@@ -1,5 +1,6 @@
 "use client";
 
+import jwt from "jsonwebtoken";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect } from "react";
 import {
@@ -39,8 +40,23 @@ export default function FabricClient({ fabric }) {
     const [isBoutiqueUser, setIsBoutiqueUser] = useState(false);
 
   useEffect(() => {
-    const boutique = localStorage.getItem("boutique");
-    setIsBoutiqueUser(boutique === "true");
+    const token = localStorage.getItem("authToken");
+    console.log(token);
+
+    if (!token) return;
+
+    try {
+      
+      const decoded = jwt.decode(token);
+      console.log(decoded);
+      setIsBoutiqueUser(decoded.isBoutique);
+
+    } catch (error) {
+
+      console.error(error);
+
+    }
+
   }, []);
 
   // Load cart data on mount
@@ -128,11 +144,11 @@ export default function FabricClient({ fabric }) {
                       <span className="text-neutral-400 text-xl line-through ml-2 font-normal">
                         ₹{fabric.price} / meter
                       </span>
-                      {/* {isBoutiqueUser && ( */}
+                      {isBoutiqueUser && (
   <p className="text-base text-neutral-700 mt-2">
     Boutique Price: ₹{fabric.boutiquePrice} / meter
   </p>
-{/* )} */}
+ )}
                       <p className="text-black text-base mt-1 font-medium">
                         You save ₹
                         {(fabric.price - fabric.customerPrice).toFixed(2)}
