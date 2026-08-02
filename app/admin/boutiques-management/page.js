@@ -1,29 +1,45 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { Plus, Edit, Trash, CheckCircle, XCircle } from "lucide-react";
+import { Plus, Edit, Trash, CheckCircle, XCircle, Search } from "lucide-react";
 
 export default function BoutiquesManagement() {
   const [boutiques, setBoutiques] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-  const fetchBoutiques = async () => {
+  const fetchBoutiques = useCallback(async (nextPage = 1, searchTerm = "") => {
     try {
-      const res = await fetch("/api/boutiques");
+      setLoading(true);
+      const params = new URLSearchParams({
+        page: String(nextPage),
+        limit: "20",
+        search: searchTerm,
+      });
+      const res = await fetch(`/api/boutiques?${params.toString()}`);
       const data = await res.json();
-      setBoutiques(data);
+      setBoutiques(data.boutiques || []);
+      setPage(data.page || nextPage);
+      setTotalPages(data.pages || 1);
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    fetchBoutiques();
-  }, []);
+    fetchBoutiques(1, "");
+  }, [fetchBoutiques]);
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    fetchBoutiques(1, search);
+  };
 
   const deleteBoutique = async (id) => {
     if (!confirm("Delete this boutique?")) return;
@@ -62,7 +78,7 @@ export default function BoutiquesManagement() {
   }
 
   alert(`✅ ${data.inserted} boutiques uploaded`);
-  fetchBoutiques();
+  fetchBoutiques(1, search);
 };
 
   return (
@@ -93,6 +109,22 @@ export default function BoutiquesManagement() {
     </Link>
   </div>
 </div>
+
+        <form onSubmit={handleSearch} className="flex items-center gap-2 mb-6">
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search boutiques..."
+            className="border border-gray-200 rounded-full px-5 py-3 w-full max-w-md text-black focus:outline-none focus:ring-2 focus:ring-[#003466]"
+          />
+          <button
+            type="submit"
+            className="bg-[#003466] text-white px-5 py-3 rounded-full hover:bg-[#002850]"
+          >
+            <Search size={18} />
+          </button>
+        </form>
 
         {/* Table */}
         <div className="overflow-x-auto bg-white rounded-3xl shadow-md border border-gray-100">
@@ -164,6 +196,28 @@ export default function BoutiquesManagement() {
             </tbody>
           </table>
         </div>
+
+        {!loading && totalPages > 1 && (
+          <div className="flex items-center justify-end gap-3 mt-6 text-black">
+            <button
+              onClick={() => fetchBoutiques(page - 1, search)}
+              disabled={page <= 1}
+              className="px-4 py-2 border border-gray-200 rounded-full disabled:opacity-50"
+            >
+              Previous
+            </button>
+            <span className="text-sm">
+              Page {page} of {totalPages}
+            </span>
+            <button
+              onClick={() => fetchBoutiques(page + 1, search)}
+              disabled={page >= totalPages}
+              className="px-4 py-2 border border-gray-200 rounded-full disabled:opacity-50"
+            >
+              Next
+            </button>
+          </div>
+        )}
       </div>
     </section>
   );
