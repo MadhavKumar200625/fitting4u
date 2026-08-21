@@ -21,6 +21,9 @@ const geistMono = Geist_Mono({
 export const metadata = {
   title: "Fitting4u",
   description: "This is fitting4u dev version",
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
 export default async function RootLayout({ children }) {

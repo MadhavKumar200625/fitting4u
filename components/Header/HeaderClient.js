@@ -100,10 +100,14 @@ export default function HeaderClient({ config }) {
           {/* ---------- LOGO ---------- */}
           <Link
             href="/"
-            className="text-3xl md:text-4xl font-extrabold tracking-tight whitespace-nowrap flex-shrink-0"
+            className="flex items-center flex-shrink-0"
+            aria-label="Fitting4U home"
           >
-            <span className="text-[#003466]">Fitting</span>
-            <span className="text-[#ffc1cc]">4U</span>
+            <img
+              src="/logo.png"
+              alt="Fitting4U logo"
+              className="h-12 md:h-14 w-auto object-contain"
+            />
           </Link>
 
           {/* ---------- NAV (DESKTOP) ---------- */}

@@ -87,7 +87,7 @@ export default function HeroSliderClient({ slides }) {
           {slides[current].buttonText && (
             <a
               href={slides[current].buttonLink || "#"}
-              className="px-8 py-3 bg-[var(--color-accent)] text-[var(--color-primary)] rounded-full font-medium shadow-lg hover:scale-105 transition"
+              className="px-8 py-3 bg-[var(--color-accent)] text-[var(--color-primary)] hover:bg-[var(--color-accent-hover)] rounded-full font-medium shadow-lg hover:scale-105 transition"
             >
               {slides[current].buttonText}
             </a>
