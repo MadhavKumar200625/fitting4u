@@ -30,7 +30,15 @@ export async function POST(req) {
     email,
     role: "SUPER_ADMIN",
     passwordHash: password, // will be hashed by pre('save')
-    allowedRoutes: ["/admin", "/admin/fabric-management", "/admin/boutiques-management", "/admin/home-measurements", "/admin/settings", "/admin/admins"],
+    allowedRoutes: [
+      "/admin",
+      "/admin/fabric-management",
+      "/admin/boutiques-management",
+      "/admin/home-measurements",
+      "/admin/settings",
+      "/admin/admins",
+      "/admin/orders-vendor",
+    ],
   });
 
   await admin.save();

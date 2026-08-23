@@ -29,6 +29,11 @@ const SECTIONS = [
     link: "/admin/orders",
     
   },
+  {
+    name: "Orders(vendor)",
+    icon: Package,
+    link: "/admin/orders-vendor",
+  },
 
   // ---------------- CORE BUSINESS ----------------
   {

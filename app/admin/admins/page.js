@@ -12,6 +12,7 @@ const ALL_ROUTES = [
   "/admin/design-management",
   "/admin/settings",
   "/admin/admins",
+  "/admin/orders-vendor",
 ];
 
 export default function AdminUsersPage() {
