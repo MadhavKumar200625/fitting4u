@@ -7,7 +7,7 @@ export async function GET(req) {
   try {
     await dbConnect();
 
-    const admin = await requireAdmin(req, ["SUPER_ADMIN"]);
+    const admin = await requireAdmin(req, ["SUPER_ADMIN", "SUB_ADMIN"]);
     if (!admin)
       return NextResponse.json({ success: false }, { status: 401 });
 

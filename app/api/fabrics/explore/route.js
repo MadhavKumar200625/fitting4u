@@ -18,7 +18,7 @@ export const GET = async (req) => {
     const minStars = searchParams.get("minStars");
 
     const page = Number(searchParams.get("page") || 1);
-    const limit = Number(searchParams.get("limit") || 20);
+    const limit = Number(searchParams.get("limit") || 42);
     const skip = (page - 1) * limit;
 
     // --- BUILD FILTER ---

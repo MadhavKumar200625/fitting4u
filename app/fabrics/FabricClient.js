@@ -3,7 +3,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import * as Slider from "@radix-ui/react-slider";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
@@ -20,12 +20,26 @@ export default function FabricClient({
   totalPages,
   page,
   search,
-  searchParams
+  searchParams,
+  fabricTypes,
+  selectedType,
+  subcategories,
+  browseAll,
+  showResults,
 }) {
   // 🧠 Compute min/max dynamically based on loaded items
   const prices = fabrics.map((f) => f.customerPrice);
   const minPrice = prices.length ? Math.min(...prices) : 0;
   const maxPrice = prices.length ? Math.max(...prices) : 10000;
+
+  useEffect(() => {
+    if (!showResults) return;
+    const timer = window.setTimeout(() => {
+      const targetId = selectedType ? "material-choice" : "collection";
+      document.getElementById(targetId)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
+    return () => window.clearTimeout(timer);
+  }, [showResults, selectedType, browseAll]);
 
   return (
     <main className="min-h-screen bg-gradient-to-br md:pt-2 pt-12 from-[#f8fafc] via-[#eef2f6] to-[#dbeafe] font-[Poppins] text-black relative">
@@ -41,8 +55,16 @@ export default function FabricClient({
         </p>
       </section>
 
+      <FabricTypePicker
+        fabricTypes={fabricTypes}
+        selectedType={selectedType}
+        subcategories={subcategories}
+        search={search}
+        browseAll={browseAll}
+      />
+
       {/* === CONTENT GRID === */}
-      <section
+      {showResults ? <section
         id="collection"
         className="mx-4 lg:mx-12 grid grid-cols-1 lg:grid-cols-4 gap-8 px-2 sm:px-10 pb-20"
       >
@@ -102,18 +124,77 @@ export default function FabricClient({
   />
 )}
         </div>
-      </section>
+      </section> : (
+        <section id="collection" className="mx-auto max-w-3xl px-6 pb-20 text-center">
+          <div className="rounded-3xl border border-dashed border-[#003466]/20 bg-white/60 p-10 text-gray-600">
+            Choose a fabric type above to start browsing our collection.
+          </div>
+        </section>
+      )}
 
       {/* ---------- MOBILE FILTER BUTTON ---------- */}
-      <MobileFilters
+      {showResults && <MobileFilters
         collections={collections}
         colors={colors}
         materials={materials}
         weaves={weaves}
         genders={genders}
         dynamicRange={[minPrice, maxPrice]}
-      />
+      />}
     </main>
+  );
+}
+
+function FabricTypePicker({ fabricTypes, selectedType, subcategories, search, browseAll }) {
+  const hrefFor = (params = {}) => {
+    const query = new URLSearchParams();
+    if (search) query.set("search", search);
+    Object.entries(params).forEach(([key, value]) => value && query.set(key, value));
+    const value = query.toString();
+    return `/fabrics${value ? `?${value}` : ""}#collection`;
+  };
+
+  return (
+    <section className="mx-auto max-w-7xl px-6 pb-10">
+      <div className="rounded-3xl border border-[#003466]/10 bg-white/80 p-5 shadow-sm backdrop-blur sm:p-7">
+        <div className="mb-5 text-center">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#003466]">Shop by fabric type</p>
+          <h2 className="mt-2 text-2xl font-bold text-[#003466]">What are you making?</h2>
+          <p className="mt-1 text-sm text-gray-600">Start with a familiar fabric type, then refine it with the filters below.</p>
+        </div>
+        <div className="grid grid-cols-1 gap-3 min-[440px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7">
+          {fabricTypes.map((type) => (
+            <Link
+              key={type.slug}
+              href={hrefFor({ type: type.slug })}
+              className={`group relative overflow-hidden rounded-2xl border p-0 text-left transition ${selectedType === type.slug ? "border-[#003466] bg-[#003466] text-white shadow-md" : "border-gray-200 bg-white text-[#003466] hover:border-[#003466]/50"}`}
+            >
+              <div className="h-24 bg-[#003466]/10">
+                {type.image ? <img src={type.image} alt="" className="h-full w-full object-cover transition duration-300 group-hover:scale-105" /> : null}
+              </div>
+              <div className="p-4"><p className="font-bold">{type.label}</p><p className={`mt-1 text-xs ${selectedType === type.slug ? "text-white/80" : "text-gray-500"}`}>{type.description}</p></div>
+            </Link>
+          ))}
+          <Link href={hrefFor({ all: "1" })} className={`rounded-2xl border p-4 transition ${browseAll ? "border-[#ffc1cc] bg-[#ffc1cc]/25 text-[#003466]" : "border-gray-200 bg-white text-[#003466] hover:border-[#003466]/50"}`}>
+            <p className="font-bold">See all fabrics</p>
+            <p className="mt-1 text-xs text-gray-500">Browse the complete collection</p>
+          </Link>
+        </div>
+
+        {selectedType && subcategories.length > 0 && (
+          <div id="material-choice" className="mt-6 scroll-mt-28 border-t border-gray-100 pt-5">
+            <p className="mb-3 text-sm font-semibold text-[#003466]">Choose a material</p>
+            <div className="flex flex-wrap gap-2">
+              {subcategories.slice(0, 14).map((material) => (
+                <Link key={material} href={hrefFor({ type: selectedType, material })} className="rounded-full border border-[#003466]/20 bg-[#f6f9ff] px-3 py-1.5 text-sm text-[#003466] hover:bg-[#003466] hover:text-white">
+                  {material}
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </section>
   );
 }
 

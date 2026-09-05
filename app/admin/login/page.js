@@ -4,9 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
-import { auth } from "@/lib/firebase";
-import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
-
 import { ShieldCheck } from "lucide-react";
 
 export default function AdminLogin() {
@@ -17,42 +14,28 @@ export default function AdminLogin() {
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
 
-  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
   const [adminId, setAdminId] = useState(null);
 
   const [otp, setOtp] = useState("");
-  const [confirmationResult, setConfirmationResult] = useState(null);
 
   const [loading, setLoading] = useState(false);
 
-  /* ------------------------------------------------------------------
-     ✅ SAME OTP SEND FUNCTION AS YOUR WORKING POPUP
-  ------------------------------------------------------------------ */
-  const sendOTP = async (phone) => {
+  /* Phone OTP via Firebase has been replaced by this email OTP API. */
+  const sendOTP = async (id) => {
     try {
       setLoading(true);
-
-      if (!window.recaptchaVerifier) {
-        window.recaptchaVerifier = new RecaptchaVerifier(
-          auth,
-          "recaptcha-container",
-          { size: "invisible" }
-        );
-      }
-
-      const fullNumber = `+91${phone}`;
-
-      const result = await signInWithPhoneNumber(
-        auth,
-        fullNumber,
-        window.recaptchaVerifier
-      );
-
-      setConfirmationResult(result);
+      const response = await fetch("/api/admin/send-email-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ adminId: id }),
+      });
+      const data = await response.json();
+      if (!response.ok || !data.success) throw new Error(data.error || "Couldn't send OTP");
       toast.success("OTP sent");
     } catch (err) {
       console.error("OTP send error:", err);
-      toast.error("Couldn't send OTP");
+      toast.error(err.message || "Couldn't send OTP");
     } finally {
       setLoading(false);
     }
@@ -87,12 +70,12 @@ export default function AdminLogin() {
       }
 
       // ✅ SUB ADMIN = OTP FLOW
-      setPhone(data.phone);
+      setEmail(data.email);
       setAdminId(data.adminId);
       setStep("OTP");
 
       setTimeout(async () => {
-  await sendOTP(data.phone);
+  await sendOTP(data.adminId);
 }, 100);
     } catch {
       toast.error("Login failed");
@@ -105,11 +88,6 @@ export default function AdminLogin() {
      ✅ OTP VERIFY — SAME LOGIC AS POPUP
   ------------------------------------------------------------------ */
   async function verifyOTP() {
-    if (!confirmationResult) {
-      toast.error("OTP not sent yet");
-      return;
-    }
-
     if (otp.length !== 6) {
       toast.error("OTP must be 6 digits");
       return;
@@ -118,14 +96,10 @@ export default function AdminLogin() {
     try {
       setLoading(true);
 
-      // ✅ Firebase verification
-      await confirmationResult.confirm(otp);
-
-      // ✅ Backend JWT fetch
       const res = await fetch("/api/admin/verify-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ adminId }),
+        body: JSON.stringify({ adminId, otp }),
       });
 
       const data = await res.json();
@@ -202,7 +176,7 @@ export default function AdminLogin() {
           <div className="space-y-5 text-center">
 
             <p className="text-sm text-gray-600">
-              OTP sent to <b>+91 {phone}</b>
+              OTP sent to <b>{email}</b>
             </p>
 
             <input
@@ -215,7 +189,7 @@ export default function AdminLogin() {
             />
 
             <button
-              onClick={() => setTimeout(() => sendOTP(data.phone), 100)}
+              onClick={() => sendOTP(adminId)}
               className="text-[#003466] text-sm hover:underline"
             >
               Resend OTP
@@ -229,9 +203,6 @@ export default function AdminLogin() {
             >
               {loading ? "Verifying..." : "Verify OTP"}
             </button>
-
-            {/* REQUIRED div for recaptcha */}
-            <div id="recaptcha-container"></div>
 
           </div>
         )}

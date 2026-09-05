@@ -19,6 +19,8 @@ export default function AccountPage() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("orders");
+  const [receivingOrders, setReceivingOrders] = useState([]);
+  const [receivingLoading, setReceivingLoading] = useState(false);
 
   const [form, setForm] = useState({
     name: "",
@@ -71,6 +73,28 @@ export default function AccountPage() {
       .finally(() => setLoading(false));
   }, []);
 
+  const loadReceivingOrders = async () => {
+    try {
+      setReceivingLoading(true);
+      const token = localStorage.getItem("authToken");
+      const response = await fetch("/api/boutique/orders-to-receive", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await response.json();
+      if (!data.success) throw new Error(data.message || "Could not load boutique orders");
+      setReceivingOrders(data.orders || []);
+    } catch (error) {
+      toast.error(error.message || "Could not load boutique orders");
+    } finally {
+      setReceivingLoading(false);
+    }
+  };
+
+  const openReceivingOrders = () => {
+    setActiveTab("receiving-orders");
+    loadReceivingOrders();
+  };
+
   /* --------------------------------------------
         LOGOUT
   -------------------------------------------- */
@@ -89,7 +113,7 @@ export default function AccountPage() {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          phone: user.phone,
+          email: user.email,
           updateData: {
             name: form.name,
             address: {
@@ -216,6 +240,15 @@ export default function AccountPage() {
               icon={<User size={18} />}
               onClick={() => setActiveTab("details")}
             />
+
+            {user.userType === "boutique" && (
+              <SidebarTab
+                active={activeTab === "receiving-orders"}
+                label="Orders to receive"
+                icon={<Store size={18} />}
+                onClick={openReceivingOrders}
+              />
+            )}
           </div>
         </div>
 
@@ -306,6 +339,41 @@ export default function AccountPage() {
 
                       </motion.div>
                     </Link>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+
+          {activeTab === "receiving-orders" && user.userType === "boutique" && (
+            <>
+              <h2 className="text-2xl font-bold mb-2 text-black">Orders to be received by me</h2>
+              <p className="text-gray-600 mb-5">Boutique pickup orders currently assigned to your boutique.</p>
+
+              {receivingLoading ? (
+                <div className="space-y-4 animate-pulse">
+                  {[1, 2].map((item) => <div key={item} className="h-32 rounded-2xl bg-white border" />)}
+                </div>
+              ) : receivingOrders.length === 0 ? (
+                <p className="text-gray-600">No orders are waiting to be received.</p>
+              ) : (
+                <div className="space-y-4">
+                  {receivingOrders.map((order) => (
+                    <div key={order._id} className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                          <p className="text-xs text-gray-500">Order ID</p>
+                          <p className="font-semibold break-all text-black">{order._id}</p>
+                          <p className="mt-2 text-sm text-gray-700">Collecting person: <span className="font-semibold">{order.pickupContactName || "Not provided"}</span></p>
+                          <p className="text-sm text-gray-700">Pickup mobile: {order.pickupContactPhone || "Not provided"}</p>
+                          <p className="text-sm text-gray-700">Customer contact: {order.userPhone}</p>
+                        </div>
+                        <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">{order.status.replaceAll("_", " ")}</span>
+                      </div>
+                      <div className="mt-4 border-t pt-3 text-sm text-gray-700">
+                        {(order.items || []).map((item, index) => <p key={index}>{item.name || item.fabricId?.name || "Fabric item"} — {item.qty} m</p>)}
+                      </div>
+                    </div>
                   ))}
                 </div>
               )}

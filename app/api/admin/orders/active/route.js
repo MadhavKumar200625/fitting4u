@@ -12,7 +12,7 @@ export async function GET(req) {
       return NextResponse.json({ success: false }, { status: 401 });
 
     const orders = await Order.find({
-      status: { $ne: "DELIVERED" }
+      status: { $nin: ["DELIVERED", "CANCELLED", "PICKED_UP"] }
     })
       .populate("pickupBoutiqueId", "title")
       .populate("items.fabricId", "name");

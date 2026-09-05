@@ -24,7 +24,7 @@ export async function POST(req) {
     const token = authHeader.replace("Bearer ", "");
     const decoded = jwt.decode(token);
 
-    if (!decoded?.phone) {
+    if (!decoded?.email) {
       return NextResponse.json(
         { success: false, message: "Unauthorized token" },
         { status: 401 }
@@ -53,7 +53,7 @@ export async function POST(req) {
      */
     const order = await Order.findOne({
       _id: orderId,
-      userPhone: decoded.phone,
+      userPhone: decoded.email,
     });
 
     if (!order) {

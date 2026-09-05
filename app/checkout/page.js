@@ -12,6 +12,7 @@ export default function Page() {
   const [cart, setCart] = useState([]);
   const [fabrics, setFabrics] = useState([]);
   const [user, setUser] = useState(null);
+  const [isBoutiqueUser, setIsBoutiqueUser] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showLogin, setShowLogin] = useState(false);
   const [showShipping, setShowShipping] = useState(false);
@@ -74,13 +75,19 @@ export default function Page() {
   // Load cart + fabrics
   useEffect(() => {
     const storedCart = JSON.parse(localStorage.getItem("cart")) || [];
-    if (storedCart.length === 0) {
+    const normalizedCart = storedCart.map((item) => ({
+      ...item,
+      qty: Math.max(1, Number(item.qty) || 1),
+    }));
+
+    if (normalizedCart.length === 0) {
       setLoading(false);
       return;
     }
-    setCart(storedCart);
+    setCart(normalizedCart);
+    localStorage.setItem("cart", JSON.stringify(normalizedCart));
 
-    const ids = storedCart.map((i) => i.id);
+    const ids = normalizedCart.map((i) => i.id);
     fetch("/api/fabrics/bulk", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -130,11 +137,12 @@ export default function Page() {
     if (!token) return;
     try {
       const decoded = jwt.decode(token);
-      if (decoded?.phone) {
-        fetch(`/api/user?phone=${decoded.phone}`)
+      if (decoded?.email) {
+        setIsBoutiqueUser(decoded.isBoutique === true);
+        fetch(`/api/user?email=${encodeURIComponent(decoded.email)}`)
           .then((r) => r.json())
-          .then((data) => setUser(data.user || { phone: decoded.phone }))
-          .catch(() => setUser({ phone: decoded.phone }));
+          .then((data) => setUser(data.user || { email: decoded.email }))
+          .catch(() => setUser({ email: decoded.email }));
       }
     } catch {
       console.error("JWT invalid");
@@ -154,7 +162,7 @@ export default function Page() {
   const updateQuantity = (id, delta) => {
     const updated = cart.map((item) => {
       if (item.id === id) {
-        let newQty = Math.max(0.25, (item.qty + delta).toFixed(2));
+        let newQty = Math.max(1, (item.qty + delta).toFixed(2));
         return { ...item, qty: parseFloat(newQty) };
       }
       return item;
@@ -199,8 +207,9 @@ export default function Page() {
   const itemsWithSubtotal = fabrics.map((f) => {
     const cartItem = cart.find((c) => c.id === f._id);
     const qty = cartItem?.qty || 0;
-    const subtotal = f.customerPrice * qty;
-    return { ...f, qty, subtotal };
+    const unitPrice = isBoutiqueUser ? f.boutiquePrice : f.customerPrice;
+    const subtotal = unitPrice * qty;
+    return { ...f, qty, unitPrice, subtotal };
   });
   const subtotal = itemsWithSubtotal.reduce((a, f) => a + f.subtotal, 0);
 
@@ -210,7 +219,7 @@ export default function Page() {
     setShowShipping(true);
   };
 
-  const beginPayment = async ({ deliveryType, address, boutiqueId }) => {
+  const beginPayment = async ({ deliveryType, address, boutiqueId, pickupContactName, pickupContactPhone }) => {
     try {
       setSubmitting(true);
 
@@ -264,12 +273,15 @@ export default function Page() {
             payment: response,
             boutiqueId,
             deliveryType,
+            pickupContactName,
+            pickupContactPhone,
           });
         },
 
         prefill: {
           name: user?.name || "",
           contact: user?.phone || "",
+          email: user?.email || "",
         },
 
         modal: {
@@ -293,6 +305,8 @@ export default function Page() {
     payment,
     boutiqueId,
     deliveryType,
+    pickupContactName,
+    pickupContactPhone,
   }) => {
     try {
       setSubmitting(true);
@@ -300,15 +314,15 @@ export default function Page() {
       const orderItems = itemsWithSubtotal.map((f) => ({
         fabricId: f._id,
         qty: f.qty,
-        price: f.customerPrice,
+        price: f.unitPrice,
         subtotal: f.subtotal,
       }));
 
       const res = await fetch("/api/order", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("authToken")}` },
         body: JSON.stringify({
-          userPhone: user.phone,
+          userPhone: user.email,
           items: orderItems,
           total: subtotal,
 
@@ -316,6 +330,8 @@ export default function Page() {
 
           deliveryAddress: deliveryType === "HOME" ? address : null,
           pickupBoutiqueId: deliveryType === "BOUTIQUE" ? boutiqueId : null,
+          pickupContactName: deliveryType === "BOUTIQUE" ? pickupContactName : "",
+          pickupContactPhone: deliveryType === "BOUTIQUE" ? pickupContactPhone : "",
 
           payment: {
             provider: "razorpay",
@@ -351,14 +367,14 @@ export default function Page() {
       const orderItems = itemsWithSubtotal.map((f) => ({
         fabricId: f._id,
         qty: f.qty,
-        price: f.customerPrice,
+        price: f.unitPrice,
         subtotal: f.subtotal,
       }));
       const res = await fetch("/api/order", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("authToken")}` },
         body: JSON.stringify({
-          userPhone: user.phone,
+          userPhone: user.email,
           items: orderItems,
           total: subtotal,
           address,
@@ -453,7 +469,7 @@ export default function Page() {
                       {f.name}
                     </p>
                     <p className="text-sm text-gray-500 mt-1">
-                      ₹{f.customerPrice}/m • {f.material}
+                      {isBoutiqueUser ? "Boutique price" : "Price"}: ₹{f.unitPrice}/m • {f.material}
                     </p>
                   </div>
 
@@ -461,7 +477,7 @@ export default function Page() {
                     {/* Quantity Controls */}
                     <div className="flex justify-center sm:justify-start items-center gap-3">
                       <button
-                        onClick={() => updateQuantity(f._id, -0.25)}
+                        onClick={() => updateQuantity(f._id, -0.1)}
                         className="w-8 h-8 flex items-center justify-center rounded-full bg-[#003466] text-white hover:bg-[#002850] transition"
                       >
                         –
@@ -470,7 +486,7 @@ export default function Page() {
                         {f.qty.toFixed(2)} m
                       </span>
                       <button
-                        onClick={() => updateQuantity(f._id, 0.25)}
+                        onClick={() => updateQuantity(f._id, 0.1)}
                         className="w-8 h-8 flex items-center justify-center rounded-full bg-[#003466] text-white hover:bg-[#002850] transition"
                       >
                         +
@@ -719,6 +735,17 @@ export default function Page() {
                   }
 
                   let address = null;
+                  const pickupContactName = deliveryType === "BOUTIQUE"
+                    ? e.target.pickupContactName.value.trim()
+                    : "";
+                  const pickupContactPhone = deliveryType === "BOUTIQUE"
+                    ? e.target.pickupContactPhone.value.replace(/\D/g, "")
+                    : "";
+
+                  if (deliveryType === "BOUTIQUE" && (!pickupContactName || !/^[6-9]\d{9}$/.test(pickupContactPhone))) {
+                    toast.error("Enter the pickup person's name and a valid 10-digit Indian mobile number");
+                    return;
+                  }
 
                   if (deliveryType === "HOME") {
                     const form = e.target;
@@ -739,9 +766,24 @@ export default function Page() {
                     deliveryType,
                     address,
                     boutiqueId: selectedBoutique?._id,
+                    pickupContactName,
+                    pickupContactPhone,
                   });
                 }}
               >
+                <div>
+                  <label className="block text-sm font-semibold text-[#003466] mb-1">
+                    Email address
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    readOnly
+                    value={user?.email || ""}
+                    className="w-full p-3 rounded-lg border border-[#003466]/20 bg-gray-100 text-gray-700 cursor-not-allowed"
+                  />
+                </div>
+
                 {deliveryType === "HOME" && (
                   <>
                     {/* Full Name */}
@@ -756,20 +798,6 @@ export default function Page() {
                         defaultValue={user?.name || ""}
                         className="w-full p-3 rounded-lg border border-[#003466]/20 bg-[#f9fbff] text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-[#003466] outline-none transition-all"
                         required
-                      />
-                    </div>
-
-                    {/* Phone */}
-                    <div>
-                      <label className="block text-sm font-semibold text-[#003466] mb-1">
-                        Phone Number
-                      </label>
-                      <input
-                        type="text"
-                        name="phone"
-                        readOnly
-                        value={user?.phone || ""}
-                        className="w-full p-3 rounded-lg border border-[#003466]/20 bg-gray-100 text-gray-700 cursor-not-allowed"
                       />
                     </div>
 
@@ -877,6 +905,41 @@ export default function Page() {
                       </div>
                     </div>
                   </>
+                )}
+
+                {deliveryType === "BOUTIQUE" && (
+                  <div className="mt-4 space-y-4">
+                    <label className="block text-sm font-semibold text-[#003466] mb-1">
+                      Name of person collecting the order
+                    </label>
+                    <input
+                      type="text"
+                      name="pickupContactName"
+                      placeholder="Enter the pickup person's name"
+                      defaultValue={user?.name || ""}
+                      className="w-full p-3 rounded-lg border border-[#003466]/20 bg-[#f9fbff] text-gray-800"
+                      required
+                    />
+                    <div>
+                      <label className="block text-sm font-semibold text-[#003466] mb-1">
+                        Pickup person&apos;s mobile number
+                      </label>
+                      <div className="flex rounded-lg border border-[#003466]/20 bg-[#f9fbff] focus-within:ring-2 focus-within:ring-[#003466]">
+                        <span className="border-r border-[#003466]/20 px-3 py-3 font-medium text-gray-700">+91</span>
+                        <input
+                          type="tel"
+                          name="pickupContactPhone"
+                          inputMode="numeric"
+                          pattern="[6-9][0-9]{9}"
+                          maxLength={10}
+                          placeholder="10-digit mobile number"
+                          defaultValue={(user?.phone || "").replace(/^\+91/, "")}
+                          className="min-w-0 flex-1 rounded-r-lg bg-transparent p-3 text-gray-800 outline-none"
+                          required
+                        />
+                      </div>
+                    </div>
+                  </div>
                 )}
 
                 {/* Submit */}

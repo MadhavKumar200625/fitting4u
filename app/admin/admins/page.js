@@ -25,6 +25,7 @@ export default function AdminUsersPage() {
   const [form, setForm] = useState({
     name: "",
     phone: "",
+    email: "",
     password: "",
     routes: [...ALL_ROUTES],
   });
@@ -87,6 +88,7 @@ export default function AdminUsersPage() {
       body: JSON.stringify({
         name: form.name,
         phone: form.phone,
+        email: form.email,
         password: form.password,
         allowedRoutes: form.routes,
       }),
@@ -102,6 +104,7 @@ export default function AdminUsersPage() {
       setForm({
         name: "",
         phone: "",
+        email: "",
         password: "",
         routes: [...ALL_ROUTES],
       });
@@ -182,10 +185,10 @@ export default function AdminUsersPage() {
 
             <form onSubmit={handleCreate} className="grid md:grid-cols-2 gap-4">
 
-              {["name","phone","password"].map((f) => (
+              {["name", "phone", "email", "password"].map((f) => (
                 <input
                   key={f}
-                  type={f === "password" ? "password" : "text"}
+                  type={f === "password" ? "password" : f === "email" ? "email" : "text"}
                   required
                   placeholder={f.toUpperCase()}
                   value={form[f]}

@@ -23,17 +23,17 @@ export async function POST(req) {
   await dbConnect();
   const { name, phone, email, password, role, allowedRoutes } = await req.json();
 
-  if (!name || !phone || !password) {
+  if (!name || !phone || !email || !password) {
     return Response.json(
-      { success: false, error: "name, phone, password are required" },
+      { success: false, error: "name, phone, email, password are required" },
       { status: 400 }
     );
   }
 
-  const existing = await Admin.findOne({ phone });
+  const existing = await Admin.findOne({ $or: [{ phone }, { email: email.toLowerCase() }] });
   if (existing) {
     return Response.json(
-      { success: false, error: "Admin with this phone already exists" },
+      { success: false, error: "Admin with this phone or email already exists" },
       { status: 409 }
     );
   }

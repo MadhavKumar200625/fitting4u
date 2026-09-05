@@ -17,9 +17,35 @@ const UserSchema = new mongoose.Schema(
   {
     phone: {
       type: String,
-      required: true,
-      unique: true,
       trim: true,
+      index: {
+        unique: true,
+        // Email-only users must not be indexed as duplicate null phone numbers.
+        partialFilterExpression: { phone: { $type: "string" } },
+      },
+    },
+
+    email: {
+      type: String,
+      unique: true,
+      sparse: true,
+      trim: true,
+      lowercase: true,
+    },
+
+    emailVerifiedAt: {
+      type: Date,
+      default: null,
+    },
+
+    otpHash: {
+      type: String,
+      select: false,
+    },
+
+    otpExpiresAt: {
+      type: Date,
+      select: false,
     },
 
     name: {

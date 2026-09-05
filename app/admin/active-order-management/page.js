@@ -6,18 +6,26 @@ import { motion } from "framer-motion";
 
 export default function ActiveOrders() {
   const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const load = async () => {
-    const token = localStorage.getItem("admin_auth");
+    const token =
+      sessionStorage.getItem("admin_auth") || localStorage.getItem("admin_auth");
 
-    const r = await fetch("/api/admin/orders/active", {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-
-    const d = await r.json();
-    if (!d.success) toast.error("Failed to load");
-
-    setOrders(d.orders);
+    try {
+      setLoading(true);
+      const r = await fetch("/api/admin/orders/active", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const d = await r.json();
+      if (!d.success) throw new Error(d.message || "Failed to load");
+      setOrders(d.orders || []);
+    } catch (error) {
+      setOrders([]);
+      toast.error(error.message || "Failed to load");
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -25,7 +33,8 @@ export default function ActiveOrders() {
   }, []);
 
   const updateStatus = async (id, status) => {
-    const token = localStorage.getItem("admin_auth");
+    const token =
+      sessionStorage.getItem("admin_auth") || localStorage.getItem("admin_auth");
 
     await fetch("/api/admin/orders/update-status", {
       method: "POST",
@@ -61,13 +70,19 @@ export default function ActiveOrders() {
       {/* CONTENT */}
       <div className="max-w-[1400px] mx-auto space-y-4">
 
-        {orders.length === 0 && (
+        {loading && (
+          <div className="space-y-4 animate-pulse" aria-label="Loading active orders">
+            {[1, 2, 3].map((item) => <div key={item} className="h-36 rounded-2xl bg-white border border-gray-200" />)}
+          </div>
+        )}
+
+        {!loading && orders.length === 0 && (
           <p className="text-center text-gray-500 mt-20">
             No active orders found.
           </p>
         )}
 
-        {orders.map((o, i) => (
+        {!loading && orders.map((o, i) => (
           <motion.div
             key={o._id}
             initial={{ opacity: 0, y: 12 }}
@@ -123,6 +138,7 @@ export default function ActiveOrders() {
               >
                 <option value="PROCESSING">PROCESSING</option>
                 <option value="READY_FOR_PICKUP">READY FOR PICKUP</option>
+                {o.deliveryType === "BOUTIQUE" && <option value="PICKED_UP">PICKED UP</option>}
                 <option value="SHIPPED">SHIPPED</option>
                 <option value="DELIVERED">DELIVERED</option>
                 <option value="CANCELLED">CANCELLED</option>

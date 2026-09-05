@@ -8,24 +8,24 @@ export async function POST(req) {
   await dbConnect();
 
   try {
-    const { phone, deviceInfo } = await req.json();
+    const { email, deviceInfo } = await req.json();
 
-    if (!phone) {
+    if (!email) {
       return NextResponse.json(
-        { success: false, message: "Phone number is required" },
+        { success: false, message: "Email is required" },
         { status: 400 }
       );
     }
 
-    const normalizedPhone = phone.trim();
+    const normalizedEmail = email.trim().toLowerCase();
     const deviceValue = deviceInfo?.trim() || "website";
 
     // Find or create user
-    let user = await User.findOne({ phone: normalizedPhone });
+    let user = await User.findOne({ email: normalizedEmail });
 
     if (!user) {
       user = await User.create({
-        phone: normalizedPhone,
+        email: normalizedEmail,
         lastLogin: new Date(),
         deviceInfo: deviceValue,
       });
@@ -35,15 +35,18 @@ export async function POST(req) {
       await user.save();
     }
 
-    // Check if boutique owner
-    const boutique = await Boutique.findOne({ phoneNumber: normalizedPhone });
-    const isBoutique = !!boutique;
+    // Boutique access is determined by the email saved on the boutique record.
+    const isBoutique = Boolean(
+      await Boutique.exists({ email: normalizedEmail })
+    );
+    user.userType = isBoutique ? "boutique" : "customer";
+    await user.save();
 
     // 🔥 Generate JWT
     const secret = process.env.JWT_SECRET || "dev-temp-secret";
 
     const token = jwt.sign(
-      { phone: normalizedPhone , isBoutique  },
+      { email: normalizedEmail, isBoutique },
       secret,
       { expiresIn: "180d" } // recommended expiry for mobile apps
     );
@@ -51,7 +54,7 @@ export async function POST(req) {
     return NextResponse.json({
       success: true,
       isBoutique,
-      phoneNumber: user.phone,
+      email: user.email,
       token,                // 🔥 return JWT here
     });
 
@@ -68,18 +71,18 @@ export async function POST(req) {
 export async function GET(req) {
   try {
     const { searchParams } = new URL(req.url);
-    const phone = searchParams.get("phone");
+    const email = searchParams.get("email");
 
-    if (!phone) {
-      return NextResponse.json({ error: "Phone number is required" }, { status: 400 });
+    if (!email) {
+      return NextResponse.json({ error: "Email is required" }, { status: 400 });
     }
 
-    const user = await User.findOne({ phone });
+    const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ success: true, data: user });
+    return NextResponse.json({ success: true, data: user, user });
   } catch (error) {
     console.error("GET /user error:", error);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
@@ -90,17 +93,17 @@ export async function GET(req) {
 export async function PUT(req) {
   try {
     const body = await req.json();
-    const { phone, updateData } = body;
+    const { email, updateData } = body;
 
-    if (!phone) {
-      return NextResponse.json({ error: "Phone number is required" }, { status: 400 });
+    if (!email) {
+      return NextResponse.json({ error: "Email is required" }, { status: 400 });
     }
 
     if (!updateData || typeof updateData !== "object") {
       return NextResponse.json({ error: "updateData object is required" }, { status: 400 });
     }
 
-    const user = await User.findOneAndUpdate({ phone }, updateData, {
+    const user = await User.findOneAndUpdate({ email: email.toLowerCase() }, updateData, {
       new: true,
     });
 
@@ -119,13 +122,13 @@ export async function PUT(req) {
 export async function DELETE(req) {
   try {
     const { searchParams } = new URL(req.url);
-    const phone = searchParams.get("phone");
+    const email = searchParams.get("email");
 
-    if (!phone) {
-      return NextResponse.json({ error: "Phone number is required" }, { status: 400 });
+    if (!email) {
+      return NextResponse.json({ error: "Email is required" }, { status: 400 });
     }
 
-    const deletedUser = await User.findOneAndDelete({ phone });
+    const deletedUser = await User.findOneAndDelete({ email: email.toLowerCase() });
     if (!deletedUser) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
@@ -141,10 +144,10 @@ export async function DELETE(req) {
 export async function PATCH(req) {
   try {
     const body = await req.json();
-    const { phone, action, details } = body;
+    const { email, action, details } = body;
 
-    if (!phone) {
-      return NextResponse.json({ error: "Phone number is required" }, { status: 400 });
+    if (!email) {
+      return NextResponse.json({ error: "Email is required" }, { status: 400 });
     }
 
     if (!action) {
@@ -152,7 +155,7 @@ export async function PATCH(req) {
     }
 
     const user = await User.findOneAndUpdate(
-      { phone },
+      { email: email.toLowerCase() },
       {
         $push: {
           activity: { action, details, timestamp: new Date() },

@@ -13,6 +13,7 @@ export default function OrdersDashboard() {
     "PAID",
     "PROCESSING",
     "READY_FOR_PICKUP",
+    "PICKED_UP",
     "SHIPPED",
     "DELIVERED",
     "CANCELLED"
@@ -30,24 +31,33 @@ export default function OrdersDashboard() {
   const [orders, setOrders] = useState([]);
   const [search, setSearch] = useState("");
   const [role, setRole] = useState("");
+  const [loading, setLoading] = useState(true);
 
-  const token = () => localStorage.getItem("admin_auth");
+  // Super-admin sessions are persistent, while OTP sub-admin sessions are scoped
+  // to the browser session. Support both so either role can load orders.
+  const token = () =>
+    sessionStorage.getItem("admin_auth") || localStorage.getItem("admin_auth");
 
   /* -----------------------
       LOAD ALL ORDERS
   -------------------------*/
   const loadAll = async () => {
-    const r = await fetch("/api/admin/orders/all", {
-      headers: { Authorization: `Bearer ${token()}` },
-    });
-
-    const d = await r.json();
-    if (!d.success) return toast.error("Load failed");
-
-    const payload = jwt.decode(token());
-    setRole(payload.role);
-
-    setOrders(d.orders);
+    try {
+      setLoading(true);
+      const r = await fetch("/api/admin/orders/all", {
+        headers: { Authorization: `Bearer ${token()}` },
+      });
+      const d = await r.json();
+      if (!d.success) throw new Error("Load failed");
+      const payload = jwt.decode(token());
+      setRole(payload?.role || "");
+      setOrders(d.orders || []);
+    } catch {
+      setOrders([]);
+      toast.error("Load failed");
+    } finally {
+      setLoading(false);
+    }
   };
 
   /* -----------------------
@@ -59,7 +69,11 @@ export default function OrdersDashboard() {
     });
 
     const d = await r.json();
-    setOrders(d.orders);
+    if (!d.success) {
+      setOrders([]);
+      return toast.error("Search failed");
+    }
+    setOrders(d.orders || []);
   };
 
   /* -----------------------
@@ -83,7 +97,9 @@ export default function OrdersDashboard() {
     loadAll();
   };
 
-  useEffect(loadAll, []);
+  useEffect(() => {
+    loadAll();
+  }, []);
 
   return (
     <div className="p-10 text-black">
@@ -117,7 +133,11 @@ export default function OrdersDashboard() {
       {/* ORDER LIST */}
       <div className="space-y-4">
 
-       {orders.map(o => {
+       {loading && <p className="text-gray-500">Loading orders...</p>}
+
+       {!loading && orders.length === 0 && <p className="text-gray-500">No orders found.</p>}
+
+       {!loading && orders.map(o => {
          const allowedStatuses = STATUS_PERMISSIONS[role] || [];
 
          return (

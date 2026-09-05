@@ -22,7 +22,7 @@ export async function GET(req) {
     const token = authHeader.replace("Bearer ", "");
     const decoded = jwt.decode(token);
     console.log("TOKEN RAW:", JSON.stringify(token));
-    if (!decoded?.phone) {
+    if (!decoded?.email) {
       return NextResponse.json(
         { success: false, message: "Invalid token" },
         { status: 401 }
@@ -31,7 +31,7 @@ export async function GET(req) {
 
     // ✅ GET ORDER
     let order = await Order.findOne({
-      userPhone: decoded.phone,
+      userPhone: decoded.email,
     })
       .sort({ createdAt: -1 })
       .populate("pickupBoutiqueId", "title googleAddress lat long")

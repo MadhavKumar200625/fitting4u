@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import dbConnect from "@/lib/dbConnect";
 import Order from "@/models/Order";
 import User from "@/models/User";
+import "@/models/boutiqueSchema";
+import "@/models/Fabric";
 import { requireAdmin } from "@/lib/adminAuth";
 
 export async function GET(req) {
@@ -61,6 +63,8 @@ export async function GET(req) {
         userPhone: order.userPhone,
         status: order.status,
         deliveryType: order.deliveryType,
+        pickupContactName: order.pickupContactName || "Not available",
+        pickupContactPhone: order.pickupContactPhone || "Not available",
         customerName: matchedUser?.name || order.deliveryAddress?.name || "Not available",
         customerEmail: matchedUser?.email || "Not available",
         customerAddress: fullAddress,

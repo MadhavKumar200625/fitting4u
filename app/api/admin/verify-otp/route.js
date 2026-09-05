@@ -1,20 +1,28 @@
 import jwt from "jsonwebtoken";
 import dbConnect from "@/lib/dbConnect";
 import Admin from "@/models/Admin";
-
-/* You will verify OTP on client via Firebase itself.
-   This API executes AFTER successful OTP confirmation
-*/
+import crypto from "crypto";
 
 export async function POST(req) {
   await dbConnect();
 
-  const { adminId } = await req.json();
+  const { adminId, otp } = await req.json();
 
-  const admin = await Admin.findById(adminId);
+  const admin = await Admin.findById(adminId).select("+otpHash +otpExpiresAt");
   if (!admin || !admin.isActive) {
     return Response.json({ success: false });
   }
+
+  const submittedHash = crypto.createHash("sha256")
+    .update(`${admin.email}:${otp}:${process.env.JWT_SECRET || "dev-temp-secret"}`)
+    .digest("hex");
+  if (!/^\d{6}$/.test(otp || "") || !admin.otpHash || admin.otpExpiresAt < new Date() || admin.otpHash !== submittedHash) {
+    return Response.json({ success: false, error: "Invalid or expired OTP" }, { status: 400 });
+  }
+
+  admin.otpHash = undefined;
+  admin.otpExpiresAt = undefined;
+  await admin.save();
 
   const token = jwt.sign(
     {

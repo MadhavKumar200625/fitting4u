@@ -3,25 +3,19 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
-import { auth } from "@/lib/firebase";
-import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
-import jwt from "jsonwebtoken";
 import toast from "react-hot-toast";
 
 export default function PhoneVerificationPopup({ isOpen, onClose, onSuccess }) {
-  const [step, setStep] = useState("phone");
-  const [phone, setPhone] = useState("");
+  const [step, setStep] = useState("email");
+  const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
-  const [confirmationResult, setConfirmationResult] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState({ phone: "", otp: "" });
+  const [errors, setErrors] = useState({ email: "", otp: "" });
 
   /* ---------- VALIDATION ---------- */
-  const validatePhone = (num) => {
-    const cleaned = num.replace(/\D/g, "");
-    if (!cleaned) return "Please enter your mobile number";
-    if (cleaned.length < 10) return "Number must be 10 digits";
-    if (cleaned.length > 10) return "Number cannot exceed 10 digits";
+  const validateEmail = (value) => {
+    if (!value) return "Please enter your email address";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return "Please enter a valid email address";
     return "";
   };
 
@@ -34,35 +28,31 @@ export default function PhoneVerificationPopup({ isOpen, onClose, onSuccess }) {
 
   /* ---------- SEND OTP ---------- */
   const sendOTP = async () => {
-    const cleaned = phone.replace(/\D/g, "");
-    const phoneError = validatePhone(cleaned);
-    setErrors({ phone: phoneError, otp: "" });
+    const normalizedEmail = email.trim().toLowerCase();
+    const emailError = validateEmail(normalizedEmail);
+    setErrors({ email: emailError, otp: "" });
 
-    if (phoneError) return toast.error(phoneError);
+    if (emailError) return toast.error(emailError);
 
     try {
       setLoading(true);
 
-      if (!window.recaptchaVerifier) {
-        window.recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha-container", {
-          size: "invisible",
-        });
-      }
+      // Phone OTP via Firebase has been replaced by the email OTP API.
+      const response = await fetch("/api/auth/send-email-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: normalizedEmail }),
+      });
+      const data = await response.json();
+      if (!response.ok || !data.success) throw new Error(data.message);
 
-      const fullNumber = `+91${cleaned}`;
-      const result = await signInWithPhoneNumber(auth, fullNumber, window.recaptchaVerifier);
-
-      setConfirmationResult(result);
       setStep("otp");
       toast.success("OTP sent!");
     } catch (err) {
       console.error("OTP send error:", err);
-      const msg =
-        err.code === "auth/too-many-requests"
-          ? "Too many attempts. Try again later."
-          : "Couldn’t send OTP. Please retry.";
+      const msg = err.message || "Couldn’t send OTP. Please retry.";
       toast.error(msg);
-      setErrors((prev) => ({ ...prev, phone: msg }));
+      setErrors((prev) => ({ ...prev, email: msg }));
     } finally {
       setLoading(false);
     }
@@ -71,42 +61,25 @@ export default function PhoneVerificationPopup({ isOpen, onClose, onSuccess }) {
   /* ---------- VERIFY OTP + CREATE USER ---------- */
   const verifyOTP = async () => {
     const otpError = validateOTP(otp);
-    setErrors({ phone: "", otp: otpError });
+    setErrors({ email: "", otp: otpError });
     if (otpError) return toast.error(otpError);
 
     try {
       setLoading(true);
-      const result = await confirmationResult.confirm(otp);
+      const response = await fetch("/api/auth/verify-email-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim().toLowerCase(), otp }),
+      });
+      const data = await response.json();
 
-      if (result.user) {
-        const userPhone = result.user.phoneNumber;
-        
-        const res = await fetch("/api/auth/generate-token", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ phone: userPhone }),
-});
-const data = await res.json();
-localStorage.setItem("authToken", data.token);
-
-        // ✅ Create or update user in DB
-        const userRes = await fetch("/api/user", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            phone: userPhone,
-            deviceInfo: "website",
-          }),
-        });
-
-        const userData = await userRes.json();
-
-localStorage.setItem("authToken", userData.token);
+      if (response.ok && data.success) {
+        localStorage.setItem("authToken", data.token);
         toast.success("Verified successfully!");
         onSuccess && onSuccess();
         onClose();
       } else {
-        toast.error("Verification failed. Please try again.");
+        toast.error(data.message || "Verification failed. Please try again.");
       }
     } catch (err) {
       console.error("OTP verify error:", err);
@@ -144,38 +117,34 @@ localStorage.setItem("authToken", userData.token);
 
             {/* Heading */}
             <h2 className="text-2xl font-semibold text-[#003466] mb-1">
-              {step === "phone" ? "Let’s get you started" : "Just one more step"}
+              {step === "email" ? "Let’s get you started" : "Just one more step"}
             </h2>
             <p className="text-gray-600 mb-6 text-sm">
-              {step === "phone"
-                ? "We’ll send a quick OTP to your number."
-                : `OTP sent to +91 ${phone}`}
+              {step === "email"
+                ? "We’ll send a quick OTP to your email."
+                : `OTP sent to ${email}`}
             </p>
 
             {/* Input Fields */}
-            {step === "phone" ? (
+            {step === "email" ? (
               <div>
                 <div
                   className={`flex items-center border rounded-full overflow-hidden shadow-sm bg-white transition-all ${
-                    errors.phone
+                    errors.email
                       ? "border-red-400"
                       : "border-neutral-300 focus-within:border-[#003466]"
                   }`}
                 >
-                  <span className="bg-neutral-100 px-4 py-3 text-[#003466] font-medium text-base border-r border-neutral-300 select-none">
-                    +91
-                  </span>
                   <input
-                    type="tel"
-                    placeholder="Enter mobile number"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    maxLength={10}
+                    type="email"
+                    placeholder="Enter email address"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     className="flex-1 px-4 py-3 bg-transparent outline-none text-gray-700 placeholder-gray-400 text-base"
                   />
                 </div>
-                {errors.phone && (
-                  <p className="text-red-500 text-xs mt-2">{errors.phone}</p>
+                {errors.email && (
+                  <p className="text-red-500 text-xs mt-2">{errors.email}</p>
                 )}
               </div>
             ) : (
@@ -204,38 +173,36 @@ localStorage.setItem("authToken", userData.token);
             <div className="mt-8">
               <button
                 disabled={loading}
-                onClick={step === "phone" ? sendOTP : verifyOTP}
+                onClick={step === "email" ? sendOTP : verifyOTP}
                 className={`w-full py-3.5 rounded-full bg-[#003466] text-white font-medium shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all ${
                   loading ? "opacity-70 cursor-not-allowed" : ""
                 }`}
               >
                 {loading
                   ? "Please wait..."
-                  : step === "phone"
+                  : step === "email"
                   ? "Continue"
                   : "Confirm"}
               </button>
             </div>
 
-            <div id="recaptcha-container"></div>
-
             {step === "otp" && (
               <button
                 onClick={() => {
-                  setStep("phone");
+                  setStep("email");
                   setOtp("");
-                  setErrors({ phone: "", otp: "" });
+                  setErrors({ email: "", otp: "" });
                 }}
                 className="text-sm mt-4 text-[#003466] hover:text-[#002850] font-medium hover:underline transition-all"
               >
-                Edit number
+                Edit email
               </button>
             )}
 
             <div className="mt-8 w-3/4 mx-auto h-[2px] bg-gradient-to-r from-[#ffc1cc]/70 to-[#003466]/70 rounded-full"></div>
 
             <p className="text-xs text-gray-500 mt-4">
-              We&apos;ll never share your number with anyone.
+              We&apos;ll never share your email with anyone.
             </p>
           </motion.div>
         </motion.div>

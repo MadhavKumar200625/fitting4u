@@ -16,9 +16,9 @@ export async function POST(req) {
 
   const { name, phone, email, password } = await req.json();
 
-  if (!name || !phone || !password) {
+  if (!name || !phone || !email || !password) {
     return Response.json(
-      { success: false, error: "name, phone, password required" },
+      { success: false, error: "name, phone, email, password required" },
       { status: 400 }
     );
   }
@@ -43,5 +43,5 @@ export async function POST(req) {
 
   await admin.save();
 
-  return Response.json({ success: true, admin: { id: admin._id, name: admin.name, phone: admin.phone } });
+  return Response.json({ success: true, admin: { id: admin._id, name: admin.name, phone: admin.phone, email: admin.email } });
 }

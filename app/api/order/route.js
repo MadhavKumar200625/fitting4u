@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import dbConnect from "@/lib/dbConnect";
 import Order from "@/models/Order";
 import Fabric from "@/models/Fabric";
+import Boutique from "@/models/boutiqueSchema";
+import User from "@/models/User";
+import jwt from "jsonwebtoken";
+import { notifyOrderUpdate } from "@/lib/orderNotifications";
 
 /* ----------------------------------------------------------------
    CREATE ORDER API
@@ -11,30 +15,44 @@ export async function POST(req) {
   try {
     await dbConnect();
 
+    const authHeader = req.headers.get("authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
+    }
+
+    let decoded;
+    try {
+      decoded = jwt.verify(authHeader.replace("Bearer ", ""), process.env.JWT_SECRET || "dev-temp-secret");
+    } catch {
+      return NextResponse.json({ success: false, message: "Invalid or expired token" }, { status: 401 });
+    }
+
+    if (!decoded?.email) {
+      return NextResponse.json({ success: false, message: "Invalid token payload" }, { status: 401 });
+    }
+
     const body = await req.json();
 
     const {
-      userPhone,
       items,
       total,
 
       deliveryType,
       deliveryAddress,
       pickupBoutiqueId,
+      pickupContactName,
+      pickupContactPhone,
 
       payment,
     } = body;
+    const pickupPhoneDigits = String(pickupContactPhone || "").replace(/\D/g, "");
+    const normalizedPickupPhone = pickupPhoneDigits.length === 12 && pickupPhoneDigits.startsWith("91")
+      ? pickupPhoneDigits.slice(2)
+      : pickupPhoneDigits;
 
     /* -------------------------------------
        BASIC VALIDATION
     --------------------------------------*/
-    if (!userPhone) {
-      return NextResponse.json(
-        { success: false, message: "User phone required" },
-        { status: 400 }
-      );
-    }
-
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
         { success: false, message: "Order items missing" },
@@ -69,14 +87,27 @@ export async function POST(req) {
     }
 
     if (deliveryType === "BOUTIQUE") {
-      if (!pickupBoutiqueId) {
+      if (!pickupBoutiqueId || !pickupContactName?.trim() || !/^[6-9]\d{9}$/.test(normalizedPickupPhone)) {
         return NextResponse.json(
           {
             success: false,
-            message: "Boutique pickup selected but boutiqueId missing",
+            message: "Please select a boutique and enter the pickup person's name and a valid Indian mobile number",
           },
           { status: 400 }
         );
+      }
+
+      const boutiqueExists = await Boutique.exists({ _id: pickupBoutiqueId });
+      if (!boutiqueExists) {
+        return NextResponse.json({ success: false, message: "Selected boutique was not found" }, { status: 404 });
+      }
+
+      const phoneInUse = await User.exists({
+        phone: `+91${normalizedPickupPhone}`,
+        email: { $ne: decoded.email },
+      });
+      if (phoneInUse) {
+        return NextResponse.json({ success: false, message: "This mobile number is already linked to another account" }, { status: 409 });
       }
     }
 
@@ -93,6 +124,18 @@ export async function POST(req) {
         );
       }
 
+      const quantity = Number(item.qty);
+      if (
+        !Number.isFinite(quantity) ||
+        quantity < 1 ||
+        Math.abs(quantity * 10 - Math.round(quantity * 10)) > 1e-8
+      ) {
+        return NextResponse.json(
+          { success: false, message: "Each fabric quantity must be at least 1 meter in 0.1 meter increments" },
+          { status: 400 }
+        );
+      }
+
       // Optional but recommended anti-tamper check
       const fabric = await Fabric.findById(item.fabricId);
       if (!fabric) {
@@ -102,7 +145,16 @@ export async function POST(req) {
         );
       }
 
-      const expectedPrice = fabric.customerPrice;
+      const expectedPrice = decoded.isBoutique === true
+        ? fabric.boutiquePrice
+        : fabric.customerPrice;
+
+      if (expectedPrice == null) {
+        return NextResponse.json(
+          { success: false, message: `Price is unavailable for ${fabric.name}` },
+          { status: 400 }
+        );
+      }
 
       if (Number(item.price) !== Number(expectedPrice)) {
         return NextResponse.json(
@@ -114,7 +166,7 @@ export async function POST(req) {
         );
       }
 
-      verifiedTotal += expectedPrice * item.qty;
+      verifiedTotal += expectedPrice * quantity;
     }
 
     verifiedTotal = Number(verifiedTotal.toFixed(2));
@@ -134,8 +186,16 @@ export async function POST(req) {
     /* -------------------------------------
        CREATE ORDER DOCUMENT
     --------------------------------------*/
+    if (deliveryType === "BOUTIQUE") {
+      await User.findOneAndUpdate(
+        { email: decoded.email },
+        { $set: { name: pickupContactName.trim(), phone: `+91${normalizedPickupPhone}` } },
+        { new: true }
+      );
+    }
+
     const order = await Order.create({
-      userPhone,
+      userPhone: decoded.email,
       items,
       total: verifiedTotal,
 
@@ -147,16 +207,23 @@ export async function POST(req) {
       pickupBoutiqueId:
         deliveryType === "BOUTIQUE" ? pickupBoutiqueId : null,
 
+      pickupContactName: deliveryType === "BOUTIQUE" ? pickupContactName.trim() : "",
+      pickupContactPhone: deliveryType === "BOUTIQUE" ? `+91${normalizedPickupPhone}` : "",
+
       payment: {
   provider: "razorpay",
-  orderId: payment?.orderId,
-  paymentId: payment?.paymentId,
-  signature: payment?.signature,
+  orderId: payment?.razorpay_order_id || payment?.orderId,
+  paymentId: payment?.razorpay_payment_id || payment?.paymentId,
+  signature: payment?.razorpay_signature || payment?.signature,
   status: payment?.status || "PENDING",
 },
 
       status: "CREATED",
     });
+
+    // Email failures are logged inside the notifier and never roll back a paid order.
+    await order.populate("items.fabricId", "name slug material color gender images");
+    await notifyOrderUpdate(order, { created: true, siteUrl: new URL(req.url).origin });
 
     /* -------------------------------------
        SUCCESS RESPONSE

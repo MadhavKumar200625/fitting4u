@@ -14,8 +14,10 @@ const LOGIN_LOG_SCHEMA = new mongoose.Schema(
 const adminSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true },
-    phone: { type: String, required: true, unique: true, trim: true }, // OTP via Firebase
-    email: { type: String, trim: true, lowercase: true },
+    phone: { type: String, required: true, unique: true, trim: true },
+    email: { type: String, unique: true, sparse: true, trim: true, lowercase: true },
+    otpHash: { type: String, select: false },
+    otpExpiresAt: { type: Date, select: false },
 
     role: {
       type: String,
@@ -35,8 +37,6 @@ const adminSchema = new mongoose.Schema(
     lastLoginAt: { type: Date },
     loginLogs: [LOGIN_LOG_SCHEMA],
 
-    // If you want to tie with Firebase UID later
-    firebaseUid: { type: String, trim: true },
   },
   { timestamps: true }
 );

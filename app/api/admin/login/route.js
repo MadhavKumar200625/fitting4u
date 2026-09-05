@@ -54,6 +54,6 @@ export async function POST(req) {
   role: "SUB_ADMIN",
   requiresOtp: true,
   adminId: admin._id,
-  phone: admin.phone   // ✅ REQUIRED
+  email: admin.email
 });
 }

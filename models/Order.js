@@ -105,6 +105,18 @@ const OrderSchema = new mongoose.Schema(
       default: null,
     },
 
+    // Name of the person who will collect a boutique-pickup order.
+    pickupContactName: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    pickupContactPhone: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
     // -------------------------
     // PAYMENT
     // -------------------------
@@ -120,6 +132,7 @@ const OrderSchema = new mongoose.Schema(
         "PAID",            // payment success
         "PROCESSING",      // tailoring / packing
         "READY_FOR_PICKUP",
+        "PICKED_UP",
         "SHIPPED",
         "DELIVERED",
         "CANCELLED",

@@ -30,7 +30,7 @@ export async function GET(req) {
       );
     }
 
-    if (!decoded?.phone) {
+    if (!decoded?.email) {
       return NextResponse.json(
         { success: false, message: "Invalid token payload" },
         { status: 401 }
@@ -40,8 +40,8 @@ export async function GET(req) {
     // ✅ FIND USER
     const user = await User
       .findOne(
-        { phone: decoded.phone },
-        { name: 1, phone: 1, email: 1, address: 1 }
+        { email: decoded.email },
+        { name: 1, phone: 1, email: 1, address: 1, userType: 1 }
       )
       .lean();
 
@@ -69,7 +69,7 @@ const needsAddress =
 
 if (needsName || needsAddress) {
   const lastHomeOrder = await Order.findOne({
-    userPhone: decoded.phone,
+    userPhone: decoded.email,
     deliveryType: "HOME",
     "deliveryAddress.street": { $exists: true },
   })

@@ -6,17 +6,27 @@ import { toast } from "react-hot-toast";
 export default function OrdersVendorPage() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [updatingId, setUpdatingId] = useState("");
 
   const loadOrders = async () => {
     try {
-      const token = localStorage.getItem("admin_auth");
+      setError("");
+      const token =
+        sessionStorage.getItem("admin_auth") || localStorage.getItem("admin_auth");
+      if (!token) {
+        throw new Error("Your admin session is missing. Please sign in again.");
+      }
+
       const res = await fetch("/api/admin/orders/vendor", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
       const data = await res.json();
       if (!data.success) {
-        toast.error("Failed to load vendor orders");
+        const message = data.error || "Failed to load vendor orders";
+        setError(message);
+        toast.error(message);
         setOrders([]);
         return;
       }
@@ -24,7 +34,9 @@ export default function OrdersVendorPage() {
       setOrders(data.orders || []);
     } catch (error) {
       console.error("VENDOR ORDERS LOAD ERROR:", error);
-      toast.error("Something went wrong while loading orders");
+      const message = error.message || "Something went wrong while loading orders";
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -33,6 +45,26 @@ export default function OrdersVendorPage() {
   useEffect(() => {
     loadOrders();
   }, []);
+
+  const markPickedUp = async (orderId) => {
+    try {
+      setUpdatingId(orderId);
+      const token = sessionStorage.getItem("admin_auth") || localStorage.getItem("admin_auth");
+      const res = await fetch("/api/admin/orders/update-status", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId, status: "PICKED_UP" }),
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.message || "Could not update order");
+      toast.success("Order marked as picked up");
+      await loadOrders();
+    } catch (error) {
+      toast.error(error.message || "Could not update order");
+    } finally {
+      setUpdatingId("");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 px-6 py-28 text-black">
@@ -47,6 +79,10 @@ export default function OrdersVendorPage() {
         {loading ? (
           <div className="bg-white rounded-2xl border border-gray-200 p-8 text-gray-600">
             Loading orders...
+          </div>
+        ) : error ? (
+          <div className="bg-red-50 rounded-2xl border border-red-200 p-8 text-red-800 text-center">
+            Couldn&apos;t load orders: {error}
           </div>
         ) : orders.length === 0 ? (
           <div className="bg-white rounded-2xl border border-gray-200 p-8 text-gray-600 text-center">
@@ -69,6 +105,19 @@ export default function OrdersVendorPage() {
                     {order.status || "CREATED"}
                   </span>
                 </div>
+
+                {order.deliveryType === "BOUTIQUE" && order.status !== "PICKED_UP" && (
+                  <div className="mt-5 flex justify-end">
+                    <button
+                      type="button"
+                      disabled={updatingId === String(order._id)}
+                      onClick={() => markPickedUp(order._id)}
+                      className="rounded-xl bg-[#003466] px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {updatingId === String(order._id) ? "Updating..." : "Mark order picked up"}
+                    </button>
+                  </div>
+                )}
 
                 <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-4 text-sm">
                   <div className="rounded-xl bg-gray-50 p-3">
@@ -107,6 +156,8 @@ export default function OrdersVendorPage() {
                     <div className="text-sm text-gray-700 space-y-1">
                       <p><span className="font-semibold text-black">Boutique:</span> {order.boutiqueAddress?.title || "Boutique"}</p>
                       <p><span className="font-semibold text-black">Address:</span> {order.boutiqueAddress?.address || "Address not available"}</p>
+                      <p><span className="font-semibold text-black">Collecting person:</span> {order.pickupContactName || "Not available"}</p>
+                      <p><span className="font-semibold text-black">Pickup mobile:</span> {order.pickupContactPhone || "Not available"}</p>
                     </div>
                   )}
                 </div>

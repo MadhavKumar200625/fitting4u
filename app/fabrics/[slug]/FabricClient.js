@@ -170,7 +170,12 @@ export default function FabricClient({ fabric }) {
                   </p>
                 </div>
 
-                <QtyCartSection fabric={fabric} setCartQty={setCartQty} cartQty={cartQty} />
+                <QtyCartSection
+                  fabric={fabric}
+                  isBoutiqueUser={isBoutiqueUser}
+                  setCartQty={setCartQty}
+                  cartQty={cartQty}
+                />
 
 
 <QuickHighlights />
@@ -396,7 +401,7 @@ function ReviewStars({ avgStars = 0, reviews = [] }) {
 }
 
 /* ---------- Add to Cart Section with Remove & Reduce ---------- */
-function QtyCartSection({ fabric, setCartQty, cartQty }) {
+function QtyCartSection({ fabric, isBoutiqueUser, setCartQty, cartQty }) {
   const [qty, setQty] = useState(1);
   const [existingQty, setExistingQty] = useState(0);
 
@@ -408,9 +413,10 @@ function QtyCartSection({ fabric, setCartQty, cartQty }) {
   }, [fabric._id, cartQty]);
 
   const handleQtyChange = (delta) =>
-    setQty((p) => Math.max(0.25, parseFloat((p + delta).toFixed(2))));
+    setQty((p) => Math.max(1, parseFloat((p + delta).toFixed(2))));
 
-  const total = (fabric.boutiquePrice * qty).toFixed(2);
+  const unitPrice = isBoutiqueUser ? fabric.boutiquePrice : fabric.customerPrice;
+  const total = (unitPrice * qty).toFixed(2);
 
   const updateCartState = (cart) => {
     localStorage.setItem("cart", JSON.stringify(cart));
@@ -444,8 +450,8 @@ function QtyCartSection({ fabric, setCartQty, cartQty }) {
     const index = cart.findIndex((i) => i.id === fabric._id);
     if (index === -1) return;
 
-    if (cart[index].qty > 0.25) {
-      cart[index].qty = parseFloat((cart[index].qty - 0.25).toFixed(2));
+    if (cart[index].qty > 1) {
+      cart[index].qty = parseFloat((cart[index].qty - 0.1).toFixed(2));
       toast.success(`Reduced to ${cart[index].qty}m`);
     } else {
       cart.splice(index, 1);
@@ -470,14 +476,14 @@ function QtyCartSection({ fabric, setCartQty, cartQty }) {
       {/* Qty Selector */}
       <div className="flex items-center gap-4 mb-5">
         <button
-          onClick={() => handleQtyChange(-0.25)}
+          onClick={() => handleQtyChange(-0.1)}
           className="p-3 bg-neutral-100 rounded-full hover:bg-neutral-200 transition"
         >
           <Minus size={16} />
         </button>
         <span className="text-lg font-semibold w-16 text-center">{qty}m</span>
         <button
-          onClick={() => handleQtyChange(0.25)}
+          onClick={() => handleQtyChange(0.1)}
           className="p-3 bg-neutral-100 rounded-full hover:bg-neutral-200 transition"
         >
           <Plus size={16} />
@@ -505,7 +511,7 @@ function QtyCartSection({ fabric, setCartQty, cartQty }) {
               onClick={handleDecreaseQty}
               className="flex items-center justify-center gap-2 bg-[#ffc1cc] text-[#003466] px-6 py-3 rounded-full shadow hover:shadow-lg hover:bg-[#ffb3bd] transition-all text-sm font-medium"
             >
-              <Minus size={16} /> Reduce 0.25m
+              <Minus size={16} /> Reduce 0.1m
             </button>
 
             <button
