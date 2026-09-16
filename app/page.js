@@ -4,6 +4,7 @@ import FabricsSection from "./Home/FabricsSection";
 import BoutiqueSection from "./Home/BoutiqueSection";
 import HomeMeasurementSection from "./Home/HomeMeasurementSection";
 import WhyChooseUs from "./Home/WhyChooseUs";
+import PartnerSection from "./Home/PartnerSection";
 
 export const revalidate = 0;            // 🔥 Do NOT cache – always fresh
 export const dynamic = "force-dynamic"; // 🔥 Bypass Vercel static caching
@@ -28,6 +29,8 @@ export default async function Home() {
       {sections.homeMeasurement && (
         <HomeMeasurementSection config={config.homePage} />
       )}
+
+      <PartnerSection />
 
       {/* ⭐ ALWAYS VISIBLE */}
       <WhyChooseUs />

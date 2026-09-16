@@ -42,6 +42,7 @@ export default function HeaderClient({ config }) {
     { name: "Boutiques", link: "/boutiques", enabled: config.sections.boutiques },
     { name: "Fabric Store", link: "/fabrics", enabled: config.sections.fabricStore },
     { name: "Home Measurement", link: "/home-measurement", enabled: config.sections.homeMeasurement },
+    { name: "Partner with us", link: "/partner-with-us", enabled: true },
     { name: "Design Now", link: "/design-now", enabled: config.sections.designNow },
   ].filter((t) => t.enabled);
 

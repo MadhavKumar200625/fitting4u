@@ -483,7 +483,7 @@ function SearchAndFilterBar({
 
   return (
     <>
-      <div className="mb-6 flex items-center gap-2 w-full">
+      <form method="get" action="/fabrics" className="mb-6 flex items-center gap-2 w-full">
         <div className="relative flex-1">
           <input
             type="text"
@@ -517,7 +517,7 @@ function SearchAndFilterBar({
         >
           Search
         </button>
-      </div>
+      </form>
 
       {/* Mobile Filters Modal (Bottom Sheet) */}
       <AnimatePresence>

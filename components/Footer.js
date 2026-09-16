@@ -47,6 +47,7 @@ export default function Footer() {
               ["Home", "/"],
               ["Boutiques", "/boutiques"],
               ["Fabric Store", "/fabrics"],
+              ["Partner with us", "/partner-with-us"],
               // ["Home Measurement", "/home-measurement"],
               // ["Design Now", "/design-now"],
             ].map(([name, href]) => (
