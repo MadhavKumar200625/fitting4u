@@ -1,85 +1,76 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { ArrowRight, MapPin } from "lucide-react";
 
-const featuredBoutiques = [
-  {
-    slug: "aryatha-fashion-studio",
-    name: "Aryatha Fashion Studio",
-    location: "Bengaluru",
-    specialty: "Bridal & Occasion Wear",
-    logo: "A",
-    image:
-      "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=80",
-  },
-  {
-    slug: "golden-lotus-designer-studio",
-    name: "Golden Lotus Designer Studio",
-    location: "Bengaluru",
-    specialty: "Designer Dresses",
-    logo: "G",
-    image:
-      "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=900&q=80",
-  },
-  {
-    slug: "kianaa-fashion-studio-3",
-    name: "Kianaa Fashion Studio",
-    location: "Bengaluru",
-    specialty: "Luxury Tailoring",
-    logo: "K",
-    image:
-      "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=900&q=80",
-  },
-  {
-    slug: "ethnic-barn-boutique-vignan-nagar",
-    name: "Ethnic Barn Boutique",
-    location: "Vignan Nagar",
-    specialty: "Ethnic & Festive Edit",
-    logo: "E",
-    image:
-      "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=80",
-  },
-  {
-    slug: "riddhi-designer-boutique",
-    name: "Riddhi Designer Boutique",
-    location: "Bengaluru",
-    specialty: "Custom Fashion",
-    logo: "R",
-    image:
-      "https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=900&q=80",
-  },
-  {
-    slug: "aadvey-designer-studio-2",
-    name: "Aadvey Designer Studio",
-    location: "Bengaluru",
-    specialty: "Modern Couture",
-    logo: "A",
-    image:
-      "https://images.unsplash.com/photo-1524503033410-cd2d5e10c7d9?auto=format&fit=crop&w=900&q=80",
-  },
-  {
-    slug: "asha-boutique-tailoring-embroidery-works-3",
-    name: "Asha Boutique & Embroidery Works",
-    location: "Bengaluru",
-    specialty: "Tailoring & Embroidery",
-    logo: "A",
-    image:
-      "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=900&q=80",
-  },
-  {
-    slug: "mikhu-clothing-brand-5",
-    name: "Mikhu Clothing Brand",
-    location: "Bengaluru",
-    specialty: "Contemporary Style",
-    logo: "M",
-    image:
-      "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=80",
-  },
+const featuredSlugs = [
+  "aryatha-fashion-studio",
+  "golden-lotus-designer-studio",
+  "kianaa-fashion-studio-3",
+  "ethnic-barn-boutique-vignan-nagar",
+  "riddhi-designer-boutique",
+  "aadvey-designer-studio-2",
+  "asha-boutique-tailoring-embroidery-works-3",
+  "mikhu-clothing-brand-5",
+  "vibhas-designer-boutique-2",
+  "house-of-atelier-fashion-design-boutique-kengeri-upnagar-2",
 ];
 
+const fallbackImage =
+  "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=80";
+
 export default function BoutiqueSection() {
+  const [featuredBoutiques, setFeaturedBoutiques] = useState([]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadBoutiques() {
+      try {
+        const res = await fetch("/api/boutiques?page=1&limit=500", { cache: "no-store" });
+
+        if (!res.ok) {
+          throw new Error("Failed to load boutiques");
+        }
+
+        const data = await res.json();
+        const boutiques = (data.boutiques || [])
+          .filter((boutique) => {
+            const matchKey = boutique.websiteUrl || boutique.slug;
+            return featuredSlugs.includes(matchKey);
+          })
+          .sort(
+            (a, b) =>
+              featuredSlugs.indexOf(a.websiteUrl || a.slug) -
+              featuredSlugs.indexOf(b.websiteUrl || b.slug)
+          )
+          .map((boutique) => ({
+            slug: boutique.websiteUrl || boutique.slug,
+            name: boutique.title,
+            location: boutique.googleAddress || "Bengaluru",
+            specialty: boutique.tagline || boutique.type || "Designer Boutique",
+            logo: boutique.businessLogo || boutique.title?.charAt(0)?.toUpperCase() || "B",
+            image:
+              boutique.imageGallery?.[0] ||
+              boutique.businessLogo ||
+              fallbackImage,
+          }));
+
+        if (mounted) setFeaturedBoutiques(boutiques);
+      } catch (error) {
+        if (mounted) setFeaturedBoutiques([]);
+      }
+    }
+
+    loadBoutiques();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   return (
     <section className="relative overflow-hidden bg-white py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 md:px-10">
@@ -115,9 +106,15 @@ export default function BoutiqueSection() {
                   className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
-                <div className="absolute left-3 top-3 flex h-10 w-10 items-center justify-center rounded-full border border-white/60 bg-white/90 text-sm font-bold text-[var(--color-primary)] shadow-sm">
-                  {boutique.logo}
-                </div>
+                {boutique.logo && (
+                  <div className="absolute left-3 top-3 flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-white/60 bg-white/90 text-sm font-bold text-[var(--color-primary)] shadow-sm">
+                    {boutique.logo.startsWith("http") ? (
+                      <img src={boutique.logo} alt={`${boutique.name} logo`} className="h-full w-full object-cover" />
+                    ) : (
+                      boutique.logo
+                    )}
+                  </div>
+                )}
                 <div className="absolute left-3 top-14 rounded-full bg-white/90 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--color-primary)]">
                   {boutique.specialty}
                 </div>
