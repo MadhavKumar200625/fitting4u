@@ -2,129 +2,163 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { ArrowRight, MapPin } from "lucide-react";
 
-const dresses = [
+const featuredBoutiques = [
   {
-    id: 1,
-    name: "Emerald Satin Gown",
-    price: "₹12,999",
+    slug: "aryatha-fashion-studio",
+    name: "Aryatha Fashion Studio",
+    location: "Bengaluru",
+    specialty: "Bridal & Occasion Wear",
+    logo: "A",
     image:
-      "https://dylandavids.com/cdn/shop/files/DD1318-2110.jpg?format=webp&v=1739916635&width=900",
-    tag: "New Arrival",
+      "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=80",
   },
   {
-    id: 2,
-    name: "Ivory Lace Dress",
-    price: "₹9,499",
+    slug: "golden-lotus-designer-studio",
+    name: "Golden Lotus Designer Studio",
+    location: "Bengaluru",
+    specialty: "Designer Dresses",
+    logo: "G",
     image:
-      "https://www.teutamatoshi.com/cdn/shop/files/BC8CF42D-D332-42A9-9FF4-AF18AEC67E3D.jpg?v=1707378617",
-    tag: "Luxury Edit",
+      "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=900&q=80",
   },
   {
-    id: 3,
-    name: "Midnight Velvet Suit",
-    price: "₹14,799",
+    slug: "kianaa-fashion-studio-3",
+    name: "Kianaa Fashion Studio",
+    location: "Bengaluru",
+    specialty: "Luxury Tailoring",
+    logo: "K",
     image:
-      "https://madhusha.in/cdn/shop/files/3_8_64ad834e-358f-426c-ab5c-57b06c3faf4f.jpg?v=1729861805&width=1445",
-    tag: "Exclusive",
+      "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=900&q=80",
   },
   {
-    id: 4,
-    name: "Rose Gold Lehenga",
-    price: "₹19,999",
+    slug: "ethnic-barn-boutique-vignan-nagar",
+    name: "Ethnic Barn Boutique",
+    location: "Vignan Nagar",
+    specialty: "Ethnic & Festive Edit",
+    logo: "E",
     image:
-      "https://i.pinimg.com/736x/4b/3d/ce/4b3dce75b28f4fd0a45e3b7394339eec.jpg",
-    tag: "Designer Pick",
+      "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=80",
+  },
+  {
+    slug: "riddhi-designer-boutique",
+    name: "Riddhi Designer Boutique",
+    location: "Bengaluru",
+    specialty: "Custom Fashion",
+    logo: "R",
+    image:
+      "https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=900&q=80",
+  },
+  {
+    slug: "aadvey-designer-studio-2",
+    name: "Aadvey Designer Studio",
+    location: "Bengaluru",
+    specialty: "Modern Couture",
+    logo: "A",
+    image:
+      "https://images.unsplash.com/photo-1524503033410-cd2d5e10c7d9?auto=format&fit=crop&w=900&q=80",
+  },
+  {
+    slug: "asha-boutique-tailoring-embroidery-works-3",
+    name: "Asha Boutique & Embroidery Works",
+    location: "Bengaluru",
+    specialty: "Tailoring & Embroidery",
+    logo: "A",
+    image:
+      "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=900&q=80",
+  },
+  {
+    slug: "mikhu-clothing-brand-5",
+    name: "Mikhu Clothing Brand",
+    location: "Bengaluru",
+    specialty: "Contemporary Style",
+    logo: "M",
+    image:
+      "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=80",
   },
 ];
 
 export default function BoutiqueSection() {
   return (
-    <section className="py-24 bg-white relative overflow-hidden">
-      <div className="max-w-7xl mx-auto px-6 md:px-10">
-        {/* Section Header */}
+    <section className="relative overflow-hidden bg-white py-24">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 md:px-10">
         <motion.div
-          className="text-center mb-16"
+          className="mb-10 text-center"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-3 tracking-tight">
-            Boutique Highlights
-          </h2>
-          <p className="text-gray-600 max-w-2xl mx-auto text-lg leading-relaxed">
-            Step into curated luxury — a glimpse of boutique-ready silhouettes
-            redefining modern Indian elegance.
+          <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-[var(--color-primary)]/80">
+            Curated boutique network
           </p>
+          <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl md:text-5xl">
+            Handpicked designer studios across Bengaluru
+          </h2>
         </motion.div>
 
-        {/* Grid Layout (Responsive, No Scroll) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
-          {dresses.map((dress, index) => (
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
+          {featuredBoutiques.map((boutique, index) => (
             <motion.div
-              key={dress.id}
-              className="group relative overflow-hidden rounded-3xl bg-white border border-gray-100 shadow-[0_8px_30px_rgba(0,0,0,0.05)] hover:shadow-[0_10px_45px_rgba(0,0,0,0.08)] transition-all duration-700"
+              key={boutique.slug}
+              className="group overflow-hidden rounded-[28px] border border-gray-200 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.04)] transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(15,23,42,0.08)]"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: index * 0.15 }}
+              transition={{ duration: 0.5, delay: index * 0.08 }}
             >
-              {/* Tag */}
-              <div className="absolute top-4 left-4 z-10 bg-[var(--color-accent)] text-[var(--color-primary)] text-xs font-medium uppercase px-3 py-1 rounded-full shadow-md">
-                {dress.tag}
-              </div>
-
-              {/* Image */}
-              <div className="relative w-full h-[460px] overflow-hidden">
+              <div className="relative h-64 overflow-hidden">
                 <img
-                  src={dress.image}
-                  alt={dress.name}
-                  className="w-full h-full object-cover transform transition-transform duration-700 group-hover:scale-110"
+                  src={boutique.image}
+                  alt={boutique.name}
+                  className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
-
-                {/* Overlay Gradient */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-70 group-hover:opacity-80 transition-all duration-500"></div>
-
-                {/* Hover Info */}
-                <div className="absolute bottom-0 left-0 w-full p-6 text-white opacity-0 group-hover:opacity-100 transition-all duration-700">
-                  <h3 className="text-2xl font-semibold mb-1">{dress.name}</h3>
-                  <p className="text-lg font-medium mb-3 text-[var(--color-accent)]">
-                    {dress.price}
-                  </p>
-                  <button className="px-6 py-2 bg-white/90 text-gray-900 font-medium rounded-full shadow-sm hover:bg-white transition-all">
-                    View Details
-                  </button>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                <div className="absolute left-3 top-3 flex h-10 w-10 items-center justify-center rounded-full border border-white/60 bg-white/90 text-sm font-bold text-[var(--color-primary)] shadow-sm">
+                  {boutique.logo}
+                </div>
+                <div className="absolute left-3 top-14 rounded-full bg-white/90 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--color-primary)]">
+                  {boutique.specialty}
                 </div>
               </div>
 
-              {/* Default Footer */}
-              <div className="p-5 text-center">
-                <h3 className="text-xl font-semibold text-gray-800 mb-1">
-                  {dress.name}
-                </h3>
-                <p className="text-gray-500">{dress.price}</p>
+              <div className="space-y-3 p-5">
+                <h3 className="text-lg font-semibold leading-snug text-gray-900">{boutique.name}</h3>
+                <div className="flex items-center gap-2 text-sm text-gray-500">
+                  <MapPin size={14} className="text-[var(--color-primary)]" />
+                  <span>{boutique.location}</span>
+                </div>
+                <Link
+                  href={`/boutiques/${boutique.slug}`}
+                  className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--color-primary)] transition hover:text-[var(--color-primary)]"
+                >
+                  View boutique
+                  <ArrowRight size={14} />
+                </Link>
               </div>
             </motion.div>
           ))}
         </div>
 
-        {/* CTA Button */}
         <motion.div
-          className="mt-16 text-center"
+          className="mt-14 text-center"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.4 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
         >
-          <Link href="/boutiques" className="px-10 py-4  bg-[var(--color-accent)] hover:bg-[var(--color-primary)] text-gray-900 font-medium text-lg rounded-full shadow-md hover:shadow-[0_0_30px_rgba(255,193,204,0.4)] transition-all duration-300">
+          <Link
+            href="/boutiques"
+            className="inline-flex items-center gap-2 rounded-full bg-[var(--color-accent)] px-8 py-4 text-base font-medium text-gray-900 shadow-md transition-all duration-300 hover:bg-[var(--color-primary)] hover:text-white hover:shadow-[0_0_30px_rgba(255,193,204,0.4)]"
+          >
             Explore Full Boutique Collection
+            <ArrowRight size={18} />
           </Link>
         </motion.div>
       </div>
 
-      {/* Subtle Background Accent */}
-      <div className="absolute top-0 right-[-150px] w-[400px] h-[400px] bg-[var(--color-accent)]/20 rounded-full blur-3xl"></div>
+      <div className="absolute right-[-150px] top-0 h-[400px] w-[400px] rounded-full bg-[var(--color-accent)]/20 blur-3xl" />
     </section>
   );
 }

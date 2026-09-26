@@ -8,6 +8,7 @@ export async function GET(req) {
 
   const lat = parseFloat(searchParams.get("lat"));
   const long = parseFloat(searchParams.get("long"));
+  const radiusMeters = parseFloat(searchParams.get("radius")) || 50000;
 
   if (!lat || !long) {
     return Response.json({ success: false, error: "Invalid coordinates" });
@@ -20,15 +21,16 @@ export async function GET(req) {
           type: "Point",
           coordinates: [long, lat],
         },
-        distanceField: "distance", // meters
+        distanceField: "distance",
         spherical: true,
-        maxDistance: 15000, // 15km
+        maxDistance: radiusMeters,
         query: {
           status: "Active",
         },
       },
     },
-    { $limit: 5 },
+    { $sort: { distance: 1 } },
+    { $limit: 20 },
     {
       $project: {
         title: 1,
