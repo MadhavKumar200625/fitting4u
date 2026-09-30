@@ -48,6 +48,11 @@ const fetchNearbyBoutiques = async ({ lat, lng, radius = 50000000 }) => {
   return data.boutiques;
 };
 
+const requestDeviceLocation = (geolocation, options) =>
+  new Promise((resolve, reject) => {
+    geolocation.getCurrentPosition(resolve, reject, options);
+  });
+
 export default function BoutiqueSearchPage() {
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState({
@@ -140,35 +145,72 @@ export default function BoutiqueSearchPage() {
   };
 
   const handleUseCurrentLocation = () => {
+    setLocationError("");
+
     if (!navigator.geolocation) {
       setLocationError("Location access is not available on this device. Please enter a pincode instead.");
       return;
     }
 
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const { latitude, longitude } = position.coords;
+    if (!window.isSecureContext) {
+      setLocationError("Current location requires a secure connection (HTTPS). Please enter a pincode instead.");
+      return;
+    }
+
+    const locate = async () => {
+      let position;
+
+      try {
+        position = await requestDeviceLocation(navigator.geolocation, {
+          enableHighAccuracy: false,
+          timeout: 30000,
+          maximumAge: 300000,
+        });
+      } catch (error) {
+        if (error.code !== 2) {
+          if (error.code === 1) {
+            setLocationError("Location permission is blocked by your browser or device. Allow location access for this site, then try again, or enter a pincode.");
+          } else if (error.code === 3) {
+            setLocationError("Getting your location took too long. Please try again or enter a pincode.");
+          } else {
+            setLocationError("We could not get your location. Please try again or enter a pincode.");
+          }
+          return;
+        }
 
         try {
-          const nearby = await fetchNearbyBoutiques({ lat: latitude, lng: longitude });
-          saveLocationPreference({ lat: latitude, lng: longitude, label: "Current location" });
-          setBoutiques(nearby || []);
-          setTotalPages(1);
-          setPage(1);
-        } catch {
-          toast.error("Unable to load boutiques near your location.");
-          setBoutiques([]);
+          position = await requestDeviceLocation(navigator.geolocation, {
+            enableHighAccuracy: true,
+            timeout: 45000,
+            maximumAge: 0,
+          });
+        } catch (retryError) {
+          if (retryError.code === 1) {
+            setLocationError("Location permission is blocked by your browser or device. Allow location access for this site, then try again, or enter a pincode.");
+          } else if (retryError.code === 3) {
+            setLocationError("Getting your location took too long. Please try again or enter a pincode.");
+          } else {
+            setLocationError("Your device still could not determine your location. Check that location services are enabled, or enter a pincode to search.");
+          }
+          return;
         }
-      },
-      () => {
-        setLocationError("Location access was denied. Please enter a pincode to continue.");
-      },
-      {
-        enableHighAccuracy: false,
-        timeout: 10000,
-        maximumAge: 60000,
       }
-    );
+
+      const { latitude, longitude } = position.coords;
+
+      try {
+        const nearby = await fetchNearbyBoutiques({ lat: latitude, lng: longitude });
+        saveLocationPreference({ lat: latitude, lng: longitude, label: "Current location" });
+        setBoutiques(nearby || []);
+        setTotalPages(1);
+        setPage(1);
+      } catch {
+        toast.error("Unable to load boutiques near your location.");
+        setBoutiques([]);
+      }
+    };
+
+    locate();
   };
 
   const handlePincodeSubmit = async (e) => {
