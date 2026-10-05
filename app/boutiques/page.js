@@ -7,12 +7,8 @@ import { toast } from "react-hot-toast";
 
 const LOCATIONS = {
   All: [],
-  Delhi: ["South Delhi", "North Delhi", "East Delhi", "West Delhi", "Central Delhi"],
-  Mumbai: ["Bandra", "Andheri", "Juhu"],
-  Bangalore: ["Whitefield", "Indiranagar", "Koramangala"],
-  Pune: ["Viman Nagar", "Koregaon Park", "Wakad"],
-  Chennai: ["T. Nagar", "Adyar"],
-  Hyderabad: ["Banjara Hills", "Gachibowli"],
+  Delhi: ["Connaught Place", "Saket", "Dwarka", "Rohini", "Laxmi Nagar"],
+  Bangalore: ["Jayanagar", "Rajajinagar", "Hebbal", "Whitefield"],
 };
 
 const geocodePincode = async (pincode) => {
