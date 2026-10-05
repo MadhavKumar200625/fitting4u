@@ -21,6 +21,11 @@ const FabricSectionSchema = new mongoose.Schema({
   ], 
 });
 
+const AdditionalFabricsSectionSchema = new mongoose.Schema({
+  visible: { type: Boolean, default: true },
+  featuredFabrics: [{ type: String, trim: true }],
+});
+
 // Boutique section structure (SLUGS instead of ObjectIds)
 const BoutiqueSectionSchema = new mongoose.Schema({
   visible: { type: Boolean, default: true },
@@ -44,6 +49,7 @@ const SiteConfigSchema = new mongoose.Schema(
     // Section visibility
     sections: {
       fabricStore: { type: Boolean, default: true },
+      additionalFabrics: { type: Boolean, default: true },
       boutiques: { type: Boolean, default: true },
       homeMeasurement: { type: Boolean, default: true },
       designNow: { type: Boolean, default: false },
@@ -53,6 +59,10 @@ const SiteConfigSchema = new mongoose.Schema(
     homePage: {
       banners: [BannerSchema],
       fabricsSection: { type: FabricSectionSchema, default: () => ({}) },
+      additionalFabricsSection: {
+        type: AdditionalFabricsSectionSchema,
+        default: () => ({}),
+      },
       boutiquesSection: { type: BoutiqueSectionSchema, default: () => ({}) },
     },
   },

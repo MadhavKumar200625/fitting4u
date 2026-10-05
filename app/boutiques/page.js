@@ -235,7 +235,22 @@ export default function BoutiqueSearchPage() {
     }
   };
 
-  const pageNumbers = Array.from({ length: totalPages }, (_, index) => index + 1);
+  const pageTokens = (() => {
+    if (totalPages <= 5) return Array.from({ length: totalPages }, (_, index) => index + 1);
+
+    const middleStart = page <= 3 ? 2 : page >= totalPages - 2 ? totalPages - 2 : page - 1;
+    const middleEnd = page <= 3 ? 3 : page >= totalPages - 2 ? totalPages - 1 : page + 1;
+    const pages = [1];
+
+    if (middleStart > 2) pages.push("start-ellipsis");
+    for (let pageNumber = middleStart; pageNumber <= middleEnd; pageNumber += 1) {
+      pages.push(pageNumber);
+    }
+    if (middleEnd < totalPages - 1) pages.push("end-ellipsis");
+    pages.push(totalPages);
+
+    return pages;
+  })();
 
   return (
     <section className="min-h-screen bg-gradient-to-b from-[#fdfdfd] via-[#f9fafc] to-[#ffffff] md:pt-32 pt-40 px-4 md:px-10 pb-20 font-[Inter] text-black">
@@ -437,7 +452,7 @@ export default function BoutiqueSearchPage() {
               <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
                 {boutiques.map((b, i) => (
                   <Link
-                    href={`/boutiques/${b.websiteUrl}`}
+                    href={`/boutiques/${b.websiteUrl || b.slug}`}
                     key={b._id || `${b.title}-${i}`}
                     style={{ animationDelay: `${i * 0.05}s` }}
                     className="group animate-fadeIn overflow-hidden rounded-3xl bg-white shadow-[0_8px_30px_rgba(0,0,0,0.04)] transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_10px_35px_rgba(0,0,0,0.12)]"
@@ -474,40 +489,53 @@ export default function BoutiqueSearchPage() {
                 ))}
               </div>
 
-              <div className="mt-16 flex flex-wrap items-center justify-center gap-3">
+              {totalPages > 1 && (
+              <nav aria-label="Boutique pages" className="mt-16 flex items-center justify-center gap-2">
                 <button
                   type="button"
+                  aria-label="Previous page"
+                  title="Previous page"
                   onClick={() => fetchBoutiques(Math.max(1, page - 1))}
                   disabled={page === 1}
-                  className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
                 >
-                  <ChevronLeft size={14} /> Prev
+                  <ChevronLeft size={18} />
                 </button>
 
-                {pageNumbers.map((pageNumber) => (
-                  <button
-                    key={pageNumber}
-                    type="button"
-                    onClick={() => fetchBoutiques(pageNumber)}
-                    className={`h-10 min-w-10 rounded-full px-3 text-sm font-medium transition ${
-                      page === pageNumber
-                        ? "bg-[#003466] text-white shadow-md"
-                        : "border border-gray-200 bg-white text-gray-700 hover:bg-[#f1f5f9]"
-                    }`}
-                  >
-                    {pageNumber}
-                  </button>
-                ))}
+                {pageTokens.map((token) =>
+                  typeof token === "number" ? (
+                    <button
+                      key={token}
+                      type="button"
+                      aria-current={page === token ? "page" : undefined}
+                      onClick={() => fetchBoutiques(token)}
+                      className={`h-10 min-w-10 rounded-full px-3 text-sm font-medium transition ${
+                        page === token
+                          ? "bg-[#003466] text-white shadow-md"
+                          : "border border-gray-200 bg-white text-gray-700 hover:bg-[#f1f5f9]"
+                      }`}
+                    >
+                      {token}
+                    </button>
+                  ) : (
+                    <span key={token} aria-hidden="true" className="px-1 text-gray-500">
+                      …
+                    </span>
+                  )
+                )}
 
                 <button
                   type="button"
+                  aria-label="Next page"
+                  title="Next page"
                   onClick={() => fetchBoutiques(Math.min(totalPages, page + 1))}
                   disabled={page >= totalPages}
-                  className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
                 >
-                  Next <ChevronRight size={14} />
+                  <ChevronRight size={18} />
                 </button>
-              </div>
+              </nav>
+              )}
             </>
           )}
         </div>

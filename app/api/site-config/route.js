@@ -9,6 +9,7 @@ export async function GET() {
       acceptingOrders: true,
       sections: {
         fabricStore: true,
+        additionalFabrics: true,
         boutiques: true,
         homeMeasurement: true,
         designNow: true,
@@ -16,6 +17,7 @@ export async function GET() {
       homePage: {
         banners: [],
         fabricsSection: {},
+        additionalFabricsSection: {},
         boutiquesSection: {},
       },
     });

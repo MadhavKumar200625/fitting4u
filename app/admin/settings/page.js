@@ -210,10 +210,92 @@ export default function SiteConfigAdmin() {
           </button>
         </section>
 
-        {/* 🔹 Featured Boutiques */}
+        {/* 🔹 Additional Homepage Fabrics */}
+        <section className="border-l-4 border-[#52765b] bg-[#f4f8f3] rounded-xl p-6 shadow-sm">
+          <h2 className="text-xl font-bold text-[#274b32] mb-4">
+            Additional Homepage Fabrics
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {(config.homePage?.additionalFabricsSection?.featuredFabrics || []).map(
+              (slug, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-center justify-between bg-white border border-[#52765b]/20 rounded-lg px-3 py-2 shadow-sm"
+                >
+                  <input
+                    type="text"
+                    value={slug}
+                    onChange={(e) => {
+                      const featuredFabrics = [
+                        ...(config.homePage.additionalFabricsSection?.featuredFabrics || []),
+                      ];
+                      featuredFabrics[idx] = e.target.value;
+                      setConfig({
+                        ...config,
+                        homePage: {
+                          ...config.homePage,
+                          additionalFabricsSection: {
+                            ...config.homePage.additionalFabricsSection,
+                            featuredFabrics,
+                          },
+                        },
+                      });
+                    }}
+                    className="w-full bg-transparent font-medium text-gray-700 outline-none"
+                    placeholder="fabric-slug"
+                  />
+                  <button
+                    type="button"
+                    aria-label="Remove fabric slug"
+                    onClick={() =>
+                      setConfig({
+                        ...config,
+                        homePage: {
+                          ...config.homePage,
+                          additionalFabricsSection: {
+                            ...config.homePage.additionalFabricsSection,
+                            featuredFabrics: config.homePage.additionalFabricsSection.featuredFabrics.filter(
+                              (_, i) => i !== idx
+                            ),
+                          },
+                        },
+                      })
+                    }
+                    className="ml-2 text-red-500 hover:text-red-700"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </div>
+              )
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={() =>
+              setConfig({
+                ...config,
+                homePage: {
+                  ...config.homePage,
+                  additionalFabricsSection: {
+                    ...config.homePage.additionalFabricsSection,
+                    featuredFabrics: [
+                      ...(config.homePage.additionalFabricsSection?.featuredFabrics || []),
+                      "",
+                    ],
+                  },
+                },
+              })
+            }
+            className="mt-3 flex items-center gap-2 font-semibold text-[#274b32]"
+          >
+            <PlusCircle size={18} /> Add fabric
+          </button>
+        </section>
+
+        {/* 🔹 Home Boutiques */}
         <section className="border-l-4 border-[#ffc1cc] bg-[#fff7fa] rounded-xl p-6 shadow-sm">
-          <h2 className="text-xl font-bold text-[#c12d58] mb-4 flex items-center gap-2">
-            Featured Boutiques
+          <h2 className="text-xl font-bold text-[#c12d58] mb-4">
+            Home Boutiques
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {(config.homePage?.boutiquesSection?.featuredBoutiques || []).map(
@@ -242,7 +324,7 @@ export default function SiteConfigAdmin() {
                       });
                     }}
                     className="w-full text-gray-700 font-medium outline-none bg-transparent"
-                    placeholder="Boutique ID or slug"
+                    placeholder="boutique-slug"
                   />
                   <button
                     onClick={() => {

@@ -34,6 +34,7 @@ export async function GET(req) {
     {
       $project: {
         title: 1,
+        websiteUrl: 1,
         googleAddress: 1,
         businessLogo: 1,
         distance: 1,

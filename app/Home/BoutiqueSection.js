@@ -5,31 +5,54 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { ArrowRight, MapPin } from "lucide-react";
 
-const featuredSlugs = [
-  "aryatha-fashion-studio",
-  "golden-lotus-designer-studio",
-  "kianaa-fashion-studio-3",
-  "ethnic-barn-boutique-vignan-nagar",
-  "riddhi-designer-boutique",
-  "aadvey-designer-studio-2",
-  "asha-boutique-tailoring-embroidery-works-3",
-  "mikhu-clothing-brand-5",
-  "vibhas-designer-boutique-2",
-  "house-of-atelier-fashion-design-boutique-kengeri-upnagar-2",
-];
-
 const fallbackImage =
   "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=80";
+const emptyFeaturedSlugs = [];
 
-export default function BoutiqueSection() {
+function normalizeBoutiqueKey(value) {
+  if (value == null) return "";
+  const key = String(value).trim();
+  if (!key) return "";
+
+  const path = key.replace(/^https?:\/\/[^/]+/i, "").split(/[?#]/)[0];
+  return path.split("/").filter(Boolean).pop()?.toLowerCase() || key.toLowerCase();
+}
+
+export default function BoutiqueSection({ config }) {
   const [featuredBoutiques, setFeaturedBoutiques] = useState([]);
+  const featuredSlugs = config?.boutiquesSection?.featuredBoutiques || emptyFeaturedSlugs;
+  const featuredSlugsKey = JSON.stringify(featuredSlugs);
 
   useEffect(() => {
     let mounted = true;
+    const configuredKeys = JSON.parse(featuredSlugsKey)
+      .map(normalizeBoutiqueKey)
+      .filter(Boolean);
+    const configuredPositions = new Map(
+      configuredKeys.map((key, index) => [key, index])
+    );
+
+    if (!configuredPositions.size) {
+      setFeaturedBoutiques([]);
+      return () => {
+        mounted = false;
+      };
+    }
+
+    const getConfiguredPosition = (boutique) =>
+      [boutique.websiteUrl, boutique.slug, boutique._id, boutique.title]
+        .map(normalizeBoutiqueKey)
+        .map((key) => configuredPositions.get(key))
+        .find((position) => position !== undefined);
 
     async function loadBoutiques() {
       try {
-        const res = await fetch("/api/boutiques?page=1&limit=500", { cache: "no-store" });
+        const res = await fetch("/api/boutiques/homepage", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          cache: "no-store",
+          body: JSON.stringify({ keys: configuredKeys }),
+        });
 
         if (!res.ok) {
           throw new Error("Failed to load boutiques");
@@ -37,17 +60,16 @@ export default function BoutiqueSection() {
 
         const data = await res.json();
         const boutiques = (data.boutiques || [])
-          .filter((boutique) => {
-            const matchKey = boutique.websiteUrl || boutique.slug;
-            return featuredSlugs.includes(matchKey);
+          .filter((boutique) => getConfiguredPosition(boutique) !== undefined)
+          .sort((a, b) => {
+            const aHasMedia = Boolean(a.businessLogo || a.imageGallery?.some(Boolean));
+            const bHasMedia = Boolean(b.businessLogo || b.imageGallery?.some(Boolean));
+            if (aHasMedia !== bHasMedia) return Number(bHasMedia) - Number(aHasMedia);
+
+            return getConfiguredPosition(a) - getConfiguredPosition(b);
           })
-          .sort(
-            (a, b) =>
-              featuredSlugs.indexOf(a.websiteUrl || a.slug) -
-              featuredSlugs.indexOf(b.websiteUrl || b.slug)
-          )
           .map((boutique) => ({
-            slug: boutique.websiteUrl || boutique.slug,
+            slug: boutique.websiteUrl || boutique.slug || boutique._id,
             name: boutique.title,
             location: boutique.googleAddress || "Bengaluru",
             specialty: boutique.tagline || boutique.type || "Designer Boutique",
@@ -69,7 +91,7 @@ export default function BoutiqueSection() {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [featuredSlugsKey]);
 
   return (
     <section className="relative overflow-hidden bg-white py-24">
@@ -85,7 +107,7 @@ export default function BoutiqueSection() {
             Curated boutique network
           </p>
           <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl md:text-5xl">
-            Handpicked designer studios across Bengaluru
+            Handpicked designer studios across Bengaluru and Delhi, with more cities coming soon
           </h2>
         </motion.div>
 

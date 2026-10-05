@@ -404,6 +404,7 @@ function ReviewStars({ avgStars = 0, reviews = [] }) {
 function QtyCartSection({ fabric, isBoutiqueUser, setCartQty, cartQty }) {
   const [qty, setQty] = useState(1);
   const [existingQty, setExistingQty] = useState(0);
+  const isOutOfStock = !(Number(fabric.stockLeft) > 0);
 
   // Load existing item qty
   useEffect(() => {
@@ -416,7 +417,8 @@ function QtyCartSection({ fabric, isBoutiqueUser, setCartQty, cartQty }) {
     setQty((p) => Math.max(1, parseFloat((p + delta).toFixed(2))));
 
   const unitPrice = isBoutiqueUser ? fabric.boutiquePrice : fabric.customerPrice;
-  const total = (unitPrice * qty).toFixed(2);
+  const displayedQty = existingQty > 0 ? existingQty : qty;
+  const total = (unitPrice * displayedQty).toFixed(2);
 
   const updateCartState = (cart) => {
     localStorage.setItem("cart", JSON.stringify(cart));
@@ -426,6 +428,8 @@ function QtyCartSection({ fabric, isBoutiqueUser, setCartQty, cartQty }) {
   };
 
   const handleAddToCart = () => {
+    if (isOutOfStock) return;
+
     const cart = JSON.parse(localStorage.getItem("cart")) || [];
     const index = cart.findIndex((i) => i.id === fabric._id);
     let message = "";
@@ -445,19 +449,17 @@ function QtyCartSection({ fabric, isBoutiqueUser, setCartQty, cartQty }) {
     toast.success(message);
   };
 
-  const handleDecreaseQty = () => {
+  const adjustCartQty = (delta) => {
     const cart = JSON.parse(localStorage.getItem("cart")) || [];
     const index = cart.findIndex((i) => i.id === fabric._id);
     if (index === -1) return;
 
-    if (cart[index].qty > 1) {
-      cart[index].qty = parseFloat((cart[index].qty - 0.1).toFixed(2));
-      toast.success(`Reduced to ${cart[index].qty}m`);
-    } else {
-      cart.splice(index, 1);
-      toast("Removed from cart", { icon: "🗑️" });
+    if (delta < 0 && Number(cart[index].qty) + delta < 1) {
+      toast("Minimum quantity is 1 meter. Use Remove to remove this fabric.");
+      return;
     }
 
+    cart[index].qty = parseFloat((Number(cart[index].qty) + delta).toFixed(2));
     updateCartState(cart);
     setExistingQty(cart.find((i) => i.id === fabric._id)?.qty || 0);
   };
@@ -473,22 +475,48 @@ function QtyCartSection({ fabric, isBoutiqueUser, setCartQty, cartQty }) {
 
   return (
     <div className="mb-10">
-      {/* Qty Selector */}
-      <div className="flex items-center gap-4 mb-5">
-        <button
-          onClick={() => handleQtyChange(-0.1)}
-          className="p-3 bg-neutral-100 rounded-full hover:bg-neutral-200 transition"
-        >
-          <Minus size={16} />
-        </button>
-        <span className="text-lg font-semibold w-16 text-center">{qty}m</span>
-        <button
-          onClick={() => handleQtyChange(0.1)}
-          className="p-3 bg-neutral-100 rounded-full hover:bg-neutral-200 transition"
-        >
-          <Plus size={16} />
-        </button>
-      </div>
+      {existingQty > 0 ? (
+        <div className="mb-5 flex items-center gap-4">
+          <span className="text-sm font-medium text-neutral-600">This fabric in your cart</span>
+          <button
+            type="button"
+            aria-label="Reduce this fabric by 0.1 meter"
+            onClick={() => adjustCartQty(-0.1)}
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-100 transition hover:bg-neutral-200"
+          >
+            <Minus size={16} />
+          </button>
+          <span className="w-20 text-center text-lg font-semibold">{existingQty.toFixed(2)}m</span>
+          <button
+            type="button"
+            aria-label="Add 0.1 meter of this fabric to cart"
+            onClick={() => adjustCartQty(0.1)}
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-100 transition hover:bg-neutral-200"
+          >
+            <Plus size={16} />
+          </button>
+        </div>
+      ) : (
+        <div className="mb-5 flex items-center gap-4">
+          <button
+            type="button"
+            aria-label="Reduce selected quantity by 0.1 meter"
+            onClick={() => handleQtyChange(-0.1)}
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-100 transition hover:bg-neutral-200"
+          >
+            <Minus size={16} />
+          </button>
+          <span className="w-20 text-center text-lg font-semibold">{qty.toFixed(2)}m</span>
+          <button
+            type="button"
+            aria-label="Increase selected quantity by 0.1 meter"
+            onClick={() => handleQtyChange(0.1)}
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-100 transition hover:bg-neutral-200"
+          >
+            <Plus size={16} />
+          </button>
+        </div>
+      )}
 
       {/* Total Price */}
       <p className="text-black mb-3">
@@ -497,50 +525,34 @@ function QtyCartSection({ fabric, isBoutiqueUser, setCartQty, cartQty }) {
 
       {/* Action Buttons */}
       <div className="flex items-center gap-4 flex-wrap">
-        <button
-          onClick={handleAddToCart}
-          className="flex items-center justify-center gap-3 bg-[#003466] text-white px-10 py-3 rounded-full shadow-md hover:shadow-lg hover:bg-[#002850] transition-all text-sm uppercase tracking-wide font-medium"
-        >
-          <ShoppingBag size={18} />{" "}
-          {existingQty > 0 ? "Update Cart" : "Add to Cart"}
-        </button>
+        {existingQty === 0 && (
+          <button
+            onClick={handleAddToCart}
+            disabled={isOutOfStock}
+            className="flex items-center justify-center gap-3 rounded-full bg-[#003466] px-10 py-3 text-sm font-medium uppercase tracking-wide text-white shadow-md transition-all hover:bg-[#002850] hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-[#003466]"
+          >
+            <ShoppingBag size={18} /> {isOutOfStock ? "Out of Stock" : "Add to Cart"}
+          </button>
+        )}
 
         {existingQty > 0 && (
-          <>
-            <button
-              onClick={handleDecreaseQty}
-              className="flex items-center justify-center gap-2 bg-[#ffc1cc] text-[#003466] px-6 py-3 rounded-full shadow hover:shadow-lg hover:bg-[#ffb3bd] transition-all text-sm font-medium"
-            >
-              <Minus size={16} /> Reduce 0.1m
-            </button>
-
-            <button
+          <button
               onClick={handleRemoveFromCart}
               className="flex items-center justify-center gap-2 border border-[#003466] text-[#003466] px-6 py-3 rounded-full hover:bg-[#003466] hover:text-white transition-all text-sm font-medium"
             >
               🗑️ Remove
-            </button>
-          </>
+          </button>
         )}
       </div>
 
       {/* Cart Info */}
-      {cartQty > 0 && (
+      {existingQty > 0 && cartQty > 0 && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className="mt-4 text-[#003466] font-medium text-base"
         >
-          🧵 You have{" "}
-          <span className="font-bold">{cartQty.toFixed(2)}m</span> total in your
-          cart
-          {existingQty > 0 && (
-            <>
-              {" "}
-              | This fabric:{" "}
-              <span className="font-bold">{existingQty.toFixed(2)}m</span>
-            </>
-          )}
+          🧵 This fabric: <span className="font-bold">{existingQty.toFixed(2)}m</span> in your cart
         </motion.div>
       )}
     </div>

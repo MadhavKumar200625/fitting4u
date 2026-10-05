@@ -17,6 +17,8 @@ export default function BoutiquePage() {
   const [boutique, setBoutique] = useState(null);
   const [loading, setLoading] = useState(true);
 
+
+
   // ✅ Fetch Boutique from API
   useEffect(() => {
     if (!slug) return;
