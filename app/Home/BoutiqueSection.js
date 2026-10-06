@@ -130,11 +130,9 @@ export default function BoutiqueSection({ config }) {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
                 {boutique.logo && (
                   <div className="absolute left-3 top-3 flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-white/60 bg-white/90 text-sm font-bold text-[var(--color-primary)] shadow-sm">
-                    {boutique.logo.startsWith("http") ? (
                       <img src={boutique.logo} alt={`${boutique.name} logo`} className="h-full w-full object-cover" />
-                    ) : (
-                      boutique.logo
-                    )}
+                    
+                  
                   </div>
                 )}
                 <div className="absolute left-3 top-14 rounded-full bg-white/90 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--color-primary)]">
