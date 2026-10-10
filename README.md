@@ -16,6 +16,18 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+## Razorpay Webhook
+
+Configure a Razorpay webhook to send events to:
+
+```text
+https://www.fitting4u.com/api/payment/webhook
+```
+
+Set a webhook secret in Razorpay and store the exact same value as `RAZORPAY_WEBHOOK_SECRET` in the app's environment. This is a separate secret from `RAZORPAY_KEY_SECRET`. Subscribe to `payment.authorized`, `payment.captured`, `payment.failed`, and `order.paid`. The application validates each webhook signature, captures authorized payments, and updates the matching pre-created order.
+
+Set `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, and `NEXT_PUBLIC_RAZORPAY_KEY_ID` to the matching Razorpay test or live account. The key ID is public; keep `RAZORPAY_KEY_SECRET` and `RAZORPAY_WEBHOOK_SECRET` server-side only. Configure the values in production hosting as well as locally.
+
 You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.

@@ -223,22 +223,58 @@ export default function Page() {
     try {
       setSubmitting(true);
 
-      // Save shipping locally
-      const shippingAddress = address;
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        setShowLogin(true);
+        setSubmitting(false);
+        return;
+      }
 
-      // Create payment order
+      const orderItems = itemsWithSubtotal.map((fabric) => ({
+        fabricId: fabric._id,
+        qty: fabric.qty,
+        price: fabric.unitPrice,
+        subtotal: fabric.subtotal,
+      }));
+
+      const draftResponse = await fetch("/api/order", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          draft: true,
+          items: orderItems,
+          total: subtotal,
+          deliveryType,
+          deliveryAddress: deliveryType === "HOME" ? address : null,
+          pickupBoutiqueId: deliveryType === "BOUTIQUE" ? boutiqueId : null,
+          pickupContactName: deliveryType === "BOUTIQUE" ? pickupContactName : "",
+          pickupContactPhone: deliveryType === "BOUTIQUE" ? pickupContactPhone : "",
+        }),
+      });
+      const draftData = await draftResponse.json();
+      if (!draftResponse.ok || !draftData.success) {
+        toast.error(draftData.message || "Unable to save your order");
+        setSubmitting(false);
+        return;
+      }
+
       const res = await fetch("/api/payment/create-order", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          amount: subtotal,
-        }),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ orderId: draftData.orderId }),
       });
 
       const data = await res.json();
 
-      if (!data.success) {
-        toast.error("Unable to start payment");
+      if (!res.ok || !data.success) {
+        toast.error(data.error || "Unable to start payment");
+        setSubmitting(false);
         return;
       }
 
@@ -268,14 +304,7 @@ export default function Page() {
             return;
           }
 
-          await confirmOrderWithPayment({
-            address: shippingAddress,
-            payment: response,
-            boutiqueId,
-            deliveryType,
-            pickupContactName,
-            pickupContactPhone,
-          });
+          await confirmOrderWithPayment();
         },
 
         prefill: {
@@ -300,94 +329,18 @@ export default function Page() {
     }
   };
 
-  const confirmOrderWithPayment = async ({
-    address,
-    payment,
-    boutiqueId,
-    deliveryType,
-    pickupContactName,
-    pickupContactPhone,
-  }) => {
+  const confirmOrderWithPayment = async () => {
     try {
       setSubmitting(true);
 
-      const orderItems = itemsWithSubtotal.map((f) => ({
-        fabricId: f._id,
-        qty: f.qty,
-        price: f.unitPrice,
-        subtotal: f.subtotal,
-      }));
-
-      const res = await fetch("/api/order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("authToken")}` },
-        body: JSON.stringify({
-          userPhone: user.email,
-          items: orderItems,
-          total: subtotal,
-
-          deliveryType,
-
-          deliveryAddress: deliveryType === "HOME" ? address : null,
-          pickupBoutiqueId: deliveryType === "BOUTIQUE" ? boutiqueId : null,
-          pickupContactName: deliveryType === "BOUTIQUE" ? pickupContactName : "",
-          pickupContactPhone: deliveryType === "BOUTIQUE" ? pickupContactPhone : "",
-
-          payment: {
-            provider: "razorpay",
-            orderId: payment.razorpay_order_id,
-            paymentId: payment.razorpay_payment_id,
-            signature: payment.razorpay_signature,
-            status: "PENDING", // ✅ PENDING until webhook verifies
-          },
-        }),
-      });
-
-      const data = await res.json();
-
-      if (data.success) {
-        toast.success("Order placed successfully!");
-        localStorage.removeItem("cart");
-        window.dispatchEvent(new Event("cartUpdated"));
-
-        setShowShipping(false);
-        window.location.href = "/order-success";
-      } else toast.error("Failed to create order");
+      toast.success("Payment received. Your order is being confirmed.");
+      localStorage.removeItem("cart");
+      window.dispatchEvent(new Event("cartUpdated"));
+      setShowShipping(false);
+      window.location.href = "/order-success";
     } catch (err) {
       console.error(err);
-      toast.error("Error creating order");
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const confirmOrder = async (address) => {
-    try {
-      setSubmitting(true);
-      const orderItems = itemsWithSubtotal.map((f) => ({
-        fabricId: f._id,
-        qty: f.qty,
-        price: f.unitPrice,
-        subtotal: f.subtotal,
-      }));
-      const res = await fetch("/api/order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("authToken")}` },
-        body: JSON.stringify({
-          userPhone: user.email,
-          items: orderItems,
-          total: subtotal,
-          address,
-        }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        toast.success("Order created successfully!");
-        localStorage.removeItem("cart");
-        setShowShipping(false);
-      } else toast.error("Failed to create order");
-    } catch (err) {
-      toast.error("Error creating order");
+      toast.error("Unable to finish checkout");
     } finally {
       setSubmitting(false);
     }

@@ -5,7 +5,6 @@ import Fabric from "@/models/Fabric";
 import Boutique from "@/models/boutiqueSchema";
 import User from "@/models/User";
 import jwt from "jsonwebtoken";
-import { notifyOrderUpdate } from "@/lib/orderNotifications";
 
 /* ----------------------------------------------------------------
    CREATE ORDER API
@@ -36,15 +35,22 @@ export async function POST(req) {
     const {
       items,
       total,
+      draft,
 
       deliveryType,
       deliveryAddress,
       pickupBoutiqueId,
       pickupContactName,
       pickupContactPhone,
-
-      payment,
     } = body;
+
+    if (draft !== true) {
+      return NextResponse.json(
+        { success: false, message: "Orders must be created as payment drafts" },
+        { status: 400 }
+      );
+    }
+
     const pickupPhoneDigits = String(pickupContactPhone || "").replace(/\D/g, "");
     const normalizedPickupPhone = pickupPhoneDigits.length === 12 && pickupPhoneDigits.startsWith("91")
       ? pickupPhoneDigits.slice(2)
@@ -211,26 +217,16 @@ export async function POST(req) {
       pickupContactPhone: deliveryType === "BOUTIQUE" ? `+91${normalizedPickupPhone}` : "",
 
       payment: {
-  provider: "razorpay",
-  orderId: payment?.razorpay_order_id || payment?.orderId,
-  paymentId: payment?.razorpay_payment_id || payment?.paymentId,
-  signature: payment?.razorpay_signature || payment?.signature,
-  status: payment?.status || "PENDING",
-},
+        provider: "razorpay",
+        status: "PENDING",
+      },
 
       status: "CREATED",
     });
 
-    // Email failures are logged inside the notifier and never roll back a paid order.
-    await order.populate("items.fabricId", "name slug material color gender images");
-    await notifyOrderUpdate(order, { created: true, siteUrl: new URL(req.url).origin });
-
-    /* -------------------------------------
-       SUCCESS RESPONSE
-    --------------------------------------*/
     return NextResponse.json({
       success: true,
-      message: "Order created",
+      message: "Payment draft created",
       orderId: order._id,
     });
   } catch (error) {
