@@ -4,7 +4,7 @@ import Order from "@/models/Order";
 import {
   captureAuthorizedPayment,
   markRazorpayPaymentCaptured,
-  RAZORPAY_TEST_AMOUNT_PAISE,
+  getOrderAmountPaise,
   timingSafeHexEqual,
 } from "@/lib/razorpayPayment";
 
@@ -41,7 +41,7 @@ export async function POST(req) {
       if (!draft) {
         return Response.json({ success: false, error: "Matching payment draft was not found" }, { status: 500 });
       }
-      if (Number(payment.amount) !== RAZORPAY_TEST_AMOUNT_PAISE || payment.currency !== "INR") {
+      if (Number(payment.amount) !== getOrderAmountPaise(draft) || payment.currency !== "INR") {
         return Response.json({ success: false, error: "Payment amount or currency does not match" }, { status: 400 });
       }
 
@@ -75,7 +75,7 @@ export async function POST(req) {
       if (!draft) {
         return Response.json({ success: false, error: "Matching payment draft was not found" }, { status: 500 });
       }
-      if (Number(payment.amount) !== RAZORPAY_TEST_AMOUNT_PAISE || payment.currency !== "INR") {
+      if (Number(payment.amount) !== getOrderAmountPaise(draft) || payment.currency !== "INR") {
         return Response.json({ success: false, error: "Payment amount or currency does not match" }, { status: 400 });
       }
 

@@ -5,7 +5,7 @@ import Order from "@/models/Order";
 import {
   captureAuthorizedPayment,
   markRazorpayPaymentCaptured,
-  RAZORPAY_TEST_AMOUNT_PAISE,
+  getOrderAmountPaise,
   timingSafeHexEqual,
 } from "@/lib/razorpayPayment";
 
@@ -48,7 +48,7 @@ export async function POST(req) {
     if (!draft) {
       return Response.json({ success: false, error: "Payment order was not found" }, { status: 404 });
     }
-    if (Number(payment.amount) !== RAZORPAY_TEST_AMOUNT_PAISE) {
+    if (Number(payment.amount) !== getOrderAmountPaise(draft)) {
       return Response.json({ success: false, error: "Payment amount does not match the order" }, { status: 400 });
     }
 
