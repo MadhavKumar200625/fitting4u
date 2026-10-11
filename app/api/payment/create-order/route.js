@@ -2,6 +2,7 @@ import Razorpay from "razorpay";
 import jwt from "jsonwebtoken";
 import dbConnect from "@/lib/dbConnect";
 import Order from "@/models/Order";
+import { RAZORPAY_TEST_AMOUNT_PAISE } from "@/lib/razorpayPayment";
 
 export async function POST(req) {
   try {
@@ -43,8 +44,9 @@ export async function POST(req) {
     });
 
     const paymentOrder = await razorpay.orders.create({
+      // Restore this amount when charging the full cart total:
       // amount: Math.round(Number(draft.total) * 100),
-      amount:200,
+      amount: RAZORPAY_TEST_AMOUNT_PAISE,
       currency: "INR",
       receipt: `fit4u_${draft._id}`,
       notes: { orderId: draft._id.toString() },

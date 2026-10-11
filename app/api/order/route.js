@@ -3,7 +3,6 @@ import dbConnect from "@/lib/dbConnect";
 import Order from "@/models/Order";
 import Fabric from "@/models/Fabric";
 import Boutique from "@/models/boutiqueSchema";
-import User from "@/models/User";
 import jwt from "jsonwebtoken";
 
 /* ----------------------------------------------------------------
@@ -108,13 +107,6 @@ export async function POST(req) {
         return NextResponse.json({ success: false, message: "Selected boutique was not found" }, { status: 404 });
       }
 
-      const phoneInUse = await User.exists({
-        phone: `+91${normalizedPickupPhone}`,
-        email: { $ne: decoded.email },
-      });
-      if (phoneInUse) {
-        return NextResponse.json({ success: false, message: "This mobile number is already linked to another account" }, { status: 409 });
-      }
     }
 
     /* -------------------------------------
@@ -192,14 +184,6 @@ export async function POST(req) {
     /* -------------------------------------
        CREATE ORDER DOCUMENT
     --------------------------------------*/
-    if (deliveryType === "BOUTIQUE") {
-      await User.findOneAndUpdate(
-        { email: decoded.email },
-        { $set: { name: pickupContactName.trim(), phone: `+91${normalizedPickupPhone}` } },
-        { new: true }
-      );
-    }
-
     const order = await Order.create({
       userPhone: decoded.email,
       items,

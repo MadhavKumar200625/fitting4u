@@ -209,7 +209,7 @@ const [showItems, setShowItems] = useState(false);
   {order.items.map((item, i) => (
     <Link
       key={i}
-      href={`/fabrics/${item.fabric.slug}`}
+      href={item.fabric?.slug ? `/fabrics/${item.fabric.slug}` : "/fabrics"}
       className="
         flex items-center justify-between gap-4
         p-4 rounded-xl bg-white border border-gray-200 shadow-sm
@@ -246,7 +246,7 @@ const [showItems, setShowItems] = useState(false);
         {/* TEXT */}
         <div className="space-y-1">
           <p className="font-semibold text-gray-900">
-            {item.fabric.name}
+            {item.fabric?.name || item.name || "Fabric"}
           </p>
 
           <p className="text-sm text-gray-500">

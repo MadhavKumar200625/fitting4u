@@ -23,53 +23,6 @@ export default function Page() {
   const [loadingBoutiques, setLoadingBoutiques] = useState(false);
   const [pincode, setPincode] = useState("");
 
-  useEffect(() => {
-    if (!showShipping || deliveryType !== "BOUTIQUE") return;
-
-    if (!navigator.geolocation) {
-      toast.error("Location not supported. Please enter pincode.");
-      return;
-    }
-
-    setLoadingBoutiques(true);
-
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        try {
-          const { latitude, longitude } = position.coords;
-          console.log(latitude,longitude)
-
-          const res = await fetch(
-            `/api/boutiques/nearby?lat=${latitude}&long=${longitude}`
-          );
-
-          const data = await res.json();
-
-          if (data.success) {
-            setBoutiques(data.boutiques || []);
-          } else {
-            setBoutiques([]);
-            toast.error("Failed to load nearby boutiques");
-          }
-        } catch {
-          toast.error("Could not fetch boutiques");
-          setBoutiques([]);
-        } finally {
-          setLoadingBoutiques(false);
-        }
-      },
-      () => {
-        toast.error("Location access denied. Use pincode search.");
-        setLoadingBoutiques(false);
-      },
-      {
-        enableHighAccuracy: false,
-        timeout: 10000,
-        maximumAge: 60000,
-      }
-    );
-  }, [showShipping, deliveryType]);
-
   const { config, loadingConfig } = useSiteConfig();
 
   // Load cart + fabrics
@@ -126,8 +79,39 @@ export default function Page() {
   };
 
   const handleBoutiqueSelect = (b) => {
-    setSelectedBoutique((prev) =>
-      String(prev?._id) === String(b._id) ? null : b
+    setSelectedBoutique(b);
+  };
+
+  const fetchNearbyBoutiques = () => {
+    if (!navigator.geolocation) {
+      toast.error("Location is not supported. Search by pincode instead.");
+      return;
+    }
+
+    setLoadingBoutiques(true);
+    navigator.geolocation.getCurrentPosition(
+      async ({ coords }) => {
+        try {
+          const res = await fetch(
+            `/api/boutiques/nearby?lat=${coords.latitude}&long=${coords.longitude}`
+          );
+          const data = await res.json();
+          if (!res.ok || !data.success) throw new Error(data.error || "Nearby search failed");
+          setBoutiques(data.boutiques || []);
+          setSelectedBoutique(null);
+        } catch (error) {
+          console.error(error);
+          setBoutiques([]);
+          toast.error("Could not load nearby boutiques");
+        } finally {
+          setLoadingBoutiques(false);
+        }
+      },
+      () => {
+        setLoadingBoutiques(false);
+        toast.error("Location access was denied. Search by pincode instead.");
+      },
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }
     );
   };
 
@@ -195,6 +179,7 @@ export default function Page() {
       }
 
       setBoutiques(data.boutiques);
+      setSelectedBoutique(null);
     } catch (err) {
       console.error(err);
       toast.error("Unable to find boutiques near this location");
@@ -583,6 +568,14 @@ export default function Page() {
                     <input
                       type="text"
                       id="pincode"
+                      value={pincode}
+                      onChange={(event) => setPincode(event.target.value)}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter") {
+                          event.preventDefault();
+                          if (pincode.trim().length >= 5) fetchBoutiquesFromPincode(pincode.trim());
+                        }
+                      }}
                       placeholder="Enter pincode to find boutiques"
                       className="flex-1 text-black p-3 border rounded-lg"
                     />
@@ -590,9 +583,7 @@ export default function Page() {
                     <button
                       type="button"
                       onClick={() => {
-                        const pin = document
-                          .getElementById("pincode")
-                          ?.value?.trim();
+                        const pin = pincode.trim();
                         if (!pin || pin.length < 5) {
                           toast.error("Please enter a valid pincode");
                           return;
@@ -604,6 +595,15 @@ export default function Page() {
                       Find
                     </button>
                   </div>
+
+                  <button
+                    type="button"
+                    onClick={fetchNearbyBoutiques}
+                    disabled={loadingBoutiques}
+                    className="w-full rounded-lg border border-[#003466]/30 px-4 py-2 text-sm font-medium text-[#003466] disabled:opacity-50"
+                  >
+                    {loadingBoutiques ? "Finding boutiques..." : "Use my location"}
+                  </button>
 
                   {loadingBoutiques && (
                     <div className="space-y-3">
@@ -632,11 +632,13 @@ export default function Page() {
 
                   {/* RESULTS */}
                   {boutiques.map((b) => (
-                    <motion.div
+                    <motion.button
+                      type="button"
                       key={b._id}
                       onClick={() => handleBoutiqueSelect(b)}
                       whileHover={{ scale: 1.02 }}
-                      className={`flex items-center gap-4 p-4 rounded-xl border transition cursor-pointer shadow-sm
+                      aria-pressed={String(selectedBoutique?._id) === String(b._id)}
+                      className={`w-full text-left flex items-center gap-4 p-4 rounded-xl border transition cursor-pointer shadow-sm
       ${
         String(selectedBoutique?._id) === String(b._id)
           ? "border-[#003466] bg-gradient-to-r from-[#003466]/10 to-[#ffc1cc]/10 shadow-md"
@@ -672,7 +674,7 @@ export default function Page() {
                           ✓
                         </div>
                       )}
-                    </motion.div>
+                    </motion.button>
                   ))}
                 </div>
               )}

@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import dbConnect from "@/lib/dbConnect";
 import Order from "@/models/Order";
 import Boutique from "@/models/boutiqueSchema";
+import "@/models/Fabric";
 
 export async function POST(req) {
   try {
@@ -116,10 +117,30 @@ export async function POST(req) {
     order.status = "READY_FOR_PICKUP";
 
     await order.save();
+    await order.populate([
+      { path: "pickupBoutiqueId", select: "title googleAddress lat long" },
+      { path: "items.fabricId", select: "name images material gender slug" },
+    ]);
+
+    const responseOrder = order.toObject();
+    responseOrder.items = responseOrder.items.map((item) => {
+      const fabric = item.fabricId || {};
+      return {
+        ...item,
+        fabric: {
+          name: fabric.name || item.name || "",
+          category: fabric.material || "",
+          gender: fabric.gender || "",
+          image: fabric.images?.[0] || null,
+          slug: fabric.slug || "",
+        },
+        fabricId: fabric._id || item.fabricId,
+      };
+    });
 
     return NextResponse.json({
       success: true,
-      order,
+      order: responseOrder,
     });
 
   } catch (err) {

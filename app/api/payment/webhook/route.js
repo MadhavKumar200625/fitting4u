@@ -1,7 +1,12 @@
 import crypto from "crypto";
 import dbConnect from "@/lib/dbConnect";
 import Order from "@/models/Order";
-import { captureAuthorizedPayment, markRazorpayPaymentCaptured, timingSafeHexEqual } from "@/lib/razorpayPayment";
+import {
+  captureAuthorizedPayment,
+  markRazorpayPaymentCaptured,
+  RAZORPAY_TEST_AMOUNT_PAISE,
+  timingSafeHexEqual,
+} from "@/lib/razorpayPayment";
 
 export const runtime = "nodejs";
 
@@ -36,7 +41,7 @@ export async function POST(req) {
       if (!draft) {
         return Response.json({ success: false, error: "Matching payment draft was not found" }, { status: 500 });
       }
-      if (Number(payment.amount) !== Math.round(Number(draft.total) * 100) || payment.currency !== "INR") {
+      if (Number(payment.amount) !== RAZORPAY_TEST_AMOUNT_PAISE || payment.currency !== "INR") {
         return Response.json({ success: false, error: "Payment amount or currency does not match" }, { status: 400 });
       }
 
@@ -70,7 +75,7 @@ export async function POST(req) {
       if (!draft) {
         return Response.json({ success: false, error: "Matching payment draft was not found" }, { status: 500 });
       }
-      if (Number(payment.amount) !== Math.round(Number(draft.total) * 100) || payment.currency !== "INR") {
+      if (Number(payment.amount) !== RAZORPAY_TEST_AMOUNT_PAISE || payment.currency !== "INR") {
         return Response.json({ success: false, error: "Payment amount or currency does not match" }, { status: 400 });
       }
 
